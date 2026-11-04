@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lật tranh tri thức · Nhóm 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;display=swap">
+<style>
+:root {
+  --red: #b3121b;
+  --red-deep: #7d0a10;
+  --black: #1b1311;
+  --paper: #efe3c6;
+  --paper-dark: #ddcba1;
+  --gold: #e3a823;
+  --gold-soft: #f4d67a;
+  --ink: #241914;
+  --font-display: "Oswald", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Noto Serif", "Times New Roman", Georgia, serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; height: 100dvh; overflow: hidden; background: var(--black);
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  color-scheme: light;
+}
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, label:focus-within {
+  outline: 3px solid var(--gold); outline-offset: 2px;
+}
+
+/* ---------- Bảng lật tranh toàn màn hình ---------- */
+.game-stage { position: fixed; inset: 0; isolation: isolate; overflow: hidden; }
+.game-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+
+/* Tranh ẩn: áp phích cổ động */
+.poster {
+  position: absolute; inset: 0; z-index: -1; overflow: hidden;
+  display: grid; place-items: center; text-align: center;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 62%, var(--red) 0 7.5deg, var(--red-deep) 7.5deg 15deg);
+}
+.poster::before {
+  content: ""; position: absolute; left: 50%; top: 62%; width: 44vmin; aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-soft), var(--gold) 60%, #b97c0d);
+  box-shadow: 0 0 0 1.4vmin var(--black), 0 0 0 2.4vmin var(--gold);
+}
+.poster-inner { position: relative; display: grid; justify-items: center; gap: 1.6vmin; padding: 4vmin 6vw; }
+.poster-star { width: 13vmin; height: auto; filter: drop-shadow(0 .6vmin 0 var(--black)); }
+.poster-kicker {
+  font-family: var(--font-display); color: var(--gold-soft); letter-spacing: .3em;
+  font-size: clamp(12px, 2.2vmin, 22px); text-transform: uppercase;
+}
+.poster-title {
+  margin: 0; font-family: var(--font-display); font-weight: 700; color: var(--paper);
+  font-size: clamp(30px, 8.5vmin, 96px); line-height: 1.02; text-transform: uppercase;
+  text-shadow: .5vmin .5vmin 0 var(--black);
+}
+.poster-quote {
+  max-width: 34em; margin: 1vmin 0 0; padding: 1.6vmin 3vmin;
+  background: var(--black); color: var(--paper); border-left: 1vmin solid var(--gold);
+  font-style: italic; font-size: clamp(13px, 2.3vmin, 22px); line-height: 1.45;
+}
+.poster-quote cite { display: block; margin-top: .6vmin; color: var(--gold); font-style: normal; font-family: var(--font-display); letter-spacing: .12em; font-size: .8em; text-transform: uppercase; }
+
+/* Lưới 6 ô */
+.game-cover {
+  position: absolute; inset: 0; display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+.game-tile {
+  --tile-bg: var(--red);
+  --tile-fg: var(--paper);
+  --tile-accent: var(--gold);
+  position: relative; min-width: 0; overflow: hidden; cursor: pointer;
+  border: 0; border-radius: 0; color: var(--tile-fg); text-align: left;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.08), transparent 55%),
+    var(--tile-bg);
+  box-shadow: inset 0 0 0 2px var(--black), inset 0 0 0 8px var(--tile-bg), inset 0 0 0 10px var(--tile-accent);
+  padding: clamp(18px, 3vmin, 34px);
+  display: grid; grid-template-rows: auto 1fr auto;
+  transition: filter .2s ease, opacity .4s ease, transform .4s ease;
+}
+/* tia sáng chéo kiểu áp phích kiến tạo */
+.game-tile::before {
+  content: ""; position: absolute; inset: -40%; pointer-events: none; opacity: .14;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, var(--tile-accent) 0 6deg, transparent 6deg 18deg);
+}
+/* Màu theo vị trí (bàn cờ), không theo loại câu hỏi */
+.game-tile:nth-child(even) { --tile-bg: var(--black); --tile-fg: var(--paper); --tile-accent: var(--red); }
+.game-tile:nth-child(5) { --tile-bg: var(--paper); --tile-fg: var(--black); --tile-accent: var(--red); }
+.game-tile:hover:not(:disabled) { filter: brightness(1.12) saturate(1.1); }
+.game-tile:focus-visible { outline: 4px solid var(--gold); outline-offset: -14px; }
+.tile-top { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tile-no {
+  font-family: var(--font-display); font-weight: 700; line-height: .9;
+  font-size: clamp(34px, 9vmin, 96px); color: var(--tile-fg);
+  text-shadow: .45vmin .45vmin 0 var(--tile-accent);
+}
+.tile-mark {
+  position: relative; align-self: center; justify-self: center;
+  display: grid; place-items: center; width: clamp(64px, 17vmin, 170px); aspect-ratio: 1;
+  color: var(--tile-bg); font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(28px, 7vmin, 72px); padding-top: 6%;
+  background: var(--tile-accent);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.tile-state {
+  position: relative; font-family: var(--font-display); letter-spacing: .14em; text-transform: uppercase;
+  font-size: clamp(11px, 1.8vmin, 16px); font-weight: 600; opacity: .85;
+}
+.game-tile.is-locked {
+  --tile-bg: #4a3f3a; --tile-fg: #bfb4a3; --tile-accent: #6d625b;
+  cursor: not-allowed;
+  background: repeating-linear-gradient(-45deg, rgba(0,0,0,.18) 0 10px, transparent 10px 20px), var(--tile-bg);
+}
+.game-tile.is-locked .tile-mark { clip-path: none; border-radius: 50%; background: var(--red); color: var(--paper); padding-top: 0; }
+.game-tile.is-revealed {
+  opacity: 0; visibility: hidden; pointer-events: none; transform: scale(.94) rotate(-1deg);
+  transition: opacity .4s ease, transform .4s ease, visibility 0s linear .4s;
+}
+.body-test .game-tile { box-shadow: inset 0 0 0 2px var(--black), inset 0 0 0 8px var(--tile-bg), inset 0 0 0 10px var(--gold); }
+
+.game-complete {
+  position: absolute; left: 50%; bottom: 7vmin; z-index: 3; margin: 0;
+  width: max-content; max-width: calc(100% - 32px); padding: 10px 20px;
+  background: var(--black); color: var(--gold-soft); border: 2px solid var(--gold);
+  font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; font-size: clamp(13px, 2vmin, 18px);
+  opacity: 0; pointer-events: none; transform: translate(-50%, 10px);
+  transition: opacity .3s ease, transform .3s ease;
+}
+.game-stage.is-complete .game-complete { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Cụm điều khiển nhỏ ---------- */
+.dock {
+  position: fixed; right: 12px; bottom: 12px; z-index: 10;
+  display: flex; align-items: center; gap: 6px; padding: 5px;
+  background: rgba(27,19,17,.88); border: 1px solid var(--gold); color: var(--paper);
+  font-family: var(--font-display); letter-spacing: .06em; font-size: 13px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+}
+.dock-progress { padding: 0 8px; white-space: nowrap; }
+.dock-progress strong { color: var(--gold); font-size: 16px; }
+.dock-bar { position: fixed; left: 0; bottom: 0; z-index: 9; height: 4px; width: 100%; background: transparent; pointer-events: none; }
+.progress-bar { display: block; width: 0; height: 100%; background: var(--gold); transition: width .35s ease; }
+.dock button, .dock .test-switch {
+  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px;
+  border: 0; background: var(--red); color: var(--paper); cursor: pointer;
+  font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; font-size: 12px;
+}
+.dock button:hover, .dock .test-switch:hover { background: #d0202a; }
+.test-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.test-switch .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--paper); }
+.test-switch input:checked + .dot { background: var(--gold); border-color: var(--gold); }
+.dock .reveal-all { background: var(--gold); color: var(--black); }
+
+/* ---------- Hộp câu hỏi: tờ truyền đơn ---------- */
+.game-dialog {
+  width: min(1000px, calc(100% - 24px)); max-height: calc(100dvh - 24px);
+  padding: 0; overflow: auto; color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,255,255,.35), transparent 40%),
+    var(--paper);
+  border: 4px solid var(--black); border-radius: 0;
+  box-shadow: 14px 14px 0 var(--red), 0 30px 80px rgba(0,0,0,.6);
+  color-scheme: light;
+}
+.game-dialog::backdrop { background: rgba(20,8,6,.78); }
+.dialog-inner { display: grid; gap: 22px; padding: 0 clamp(20px, 4vw, 44px) clamp(22px, 4vw, 40px); }
+.dialog-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 0 calc(-1 * clamp(20px, 4vw, 44px)); padding: 16px clamp(20px, 4vw, 44px);
+  background: var(--red); color: var(--paper); border-bottom: 4px solid var(--black);
+}
+.dialog-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.dialog-kind {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: 24px;
+}
+.dialog-kind::before { content: "★ "; color: var(--gold-soft); }
+.dialog-count { font-family: var(--font-display); letter-spacing: .08em; font-size: 19px; padding: 3px 12px; background: var(--black); color: var(--gold-soft); }
+.dialog-close {
+  width: 48px; height: 48px; border: 3px solid var(--paper); border-radius: 0;
+  background: transparent; color: var(--paper); font-size: 28px; line-height: 1; cursor: pointer;
+}
+.dialog-close:hover { background: var(--black); }
+.question-prompt {
+  margin: 0; font-family: var(--font-body); font-weight: 700; color: var(--black);
+  font-size: clamp(24px, 3.4vw, 38px); line-height: 1.32;
+}
+.question-clue {
+  display: none; place-items: center; min-height: 240px; padding: 16px;
+  border: 3px solid var(--black); background: #f7eedb; box-shadow: 7px 7px 0 var(--black);
+}
+.question-clue.is-visible { display: grid; }
+.rebus { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 2vw, 22px); width: 100%; }
+.rebus-item { flex: 1 1 0; min-width: 0; max-width: 280px; height: min(240px, 32dvh); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.rebus-item svg { width: 100%; height: 100%; }
+.rebus-item img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.rebus-item img { display: none; }
+.rebus-item.has-photo img { display: block; }
+.rebus-item.has-photo svg { display: none; }
+.rebus-plus { flex: none; font-family: var(--font-display); font-weight: 700; font-size: clamp(36px, 6vmin, 64px); color: var(--red); line-height: 1; }
+.answer-options { display: grid; gap: 12px; }
+.answer-option {
+  width: 100%; padding: 16px 20px; border: 3px solid var(--black); border-radius: 0;
+  background: #f8f0dc; color: var(--black); font-size: clamp(19px, 2.4vw, 26px); text-align: left; cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.answer-option:hover:not(:disabled) { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--red); }
+.answer-option:disabled { cursor: default; }
+.answer-option.is-correct { background: var(--black); color: var(--gold-soft); font-weight: 700; }
+.answer-option.is-wrong { background: var(--red); color: var(--paper); border-color: var(--red-deep); text-decoration: line-through; }
+.judge { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.judge button {
+  padding: 18px 20px; border: 3px solid var(--black); border-radius: 0; cursor: pointer;
+  font-family: var(--font-display); font-size: clamp(22px, 3vw, 32px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.judge button:hover:not(:disabled) { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--black); }
+.judge button:disabled { cursor: default; opacity: .45; }
+.judge-yes { background: var(--black); color: var(--gold-soft); }
+.judge-no { background: var(--red); color: var(--paper); }
+.question-feedback {
+  margin: 0; padding: 16px 20px; background: var(--black); color: var(--paper);
+  border-left: 10px solid var(--gold); font-size: clamp(17px, 2.1vw, 23px); line-height: 1.5;
+}
+.question-feedback.is-wrong { border-left-color: var(--red); }
+.question-feedback strong { color: var(--gold-soft); font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
+.question-feedback.is-wrong strong { color: #ff8a80; }
+
+@media (max-width: 640px) {
+  .game-cover { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .dock { right: 8px; bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar, .game-tile, .game-tile.is-revealed, .game-complete, .answer-option { transition: none; }
+}
+</style>
+</head>
+<body>
+<main class="game-stage" id="game-stage">
+  <div class="poster" aria-hidden="true">
+    <div class="poster-inner">
+      <svg class="poster-star" viewBox="0 0 100 95"><polygon points="50,0 61,35 98,35 68,57 79,92 50,70 21,92 32,57 2,35 39,35" fill="#e3a823" stroke="#1b1311" stroke-width="3"/></svg>
+      <span class="poster-kicker">Chủ nghĩa Mác – Lênin về tôn giáo</span>
+      <p class="poster-title">Tôn giáo trong thời kỳ<br>quá độ lên CNXH</p>
+      <p class="poster-quote">“Tôn giáo là tiếng thở dài của chúng sinh bị áp bức, là trái tim của thế giới không có trái tim… Tôn giáo là thuốc phiện của nhân dân.”<cite>— C. Mác</cite></p>
+    </div>
+  </div>
+  <img class="game-art" src="assets/nen.webp" alt="Đồng bào các dân tộc, tôn giáo cùng diễu hành, tay cầm hoa đỏ" onerror="this.remove()">
+
+  <div class="game-cover" role="group" aria-label="Sáu ô câu hỏi">
+    <button class="game-tile" type="button" data-question="0"><span class="tile-top"><span class="tile-no">01</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+    <button class="game-tile" type="button" data-question="1"><span class="tile-top"><span class="tile-no">02</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+    <button class="game-tile" type="button" data-question="2"><span class="tile-top"><span class="tile-no">03</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+    <button class="game-tile" type="button" data-question="3"><span class="tile-top"><span class="tile-no">04</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+    <button class="game-tile" type="button" data-question="4"><span class="tile-top"><span class="tile-no">05</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+    <button class="game-tile" type="button" data-question="5"><span class="tile-top"><span class="tile-no">06</span></span><span class="tile-mark" aria-hidden="true">?</span><span class="tile-state"></span></button>
+  </div>
+  <p class="game-complete" id="game-complete" aria-live="polite"></p>
+</main>
+
+<div class="dock-bar" aria-hidden="true"><span class="progress-bar" id="game-progress-bar"></span></div>
+<div class="dock" role="toolbar" aria-label="Điều khiển">
+  <span class="dock-progress"><strong id="game-progress">0</strong>/6</span>
+  <span id="test-toolbar" hidden><button class="reveal-all" id="reveal-all" type="button">Mở hết</button></span>
+  <label class="test-switch"><input id="test-mode" type="checkbox"><span class="dot" aria-hidden="true"></span>Test</label>
+  <button id="game-reset" type="button" aria-label="Đặt lại">↺ Đặt lại</button>
+</div>
+
+<dialog class="game-dialog" id="game-dialog" aria-labelledby="question-title">
+  <div class="dialog-inner">
+    <div class="dialog-top">
+      <div class="dialog-meta">
+        <span class="dialog-kind" id="question-kind">Trắc nghiệm</span>
+        <span class="dialog-count" id="question-count">Câu 1 / 6</span>
+      </div>
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Đóng câu hỏi">×</button>
+    </div>
+    <p class="question-prompt" id="question-title"></p>
+    <div class="question-clue" id="question-clue" role="img"></div>
+    <div class="answer-options" id="answer-options"></div>
+    <div class="judge" id="judge" hidden>
+      <button class="judge-yes" id="judge-yes" type="button">✓ Đúng</button>
+      <button class="judge-no" id="judge-no" type="button">✕ Sai</button>
+    </div>
+    <p class="question-feedback" id="question-feedback" aria-live="polite" hidden></p>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var choiceBank = [
+    {
+      kind: 'Trắc nghiệm',
+      shortKind: 'Trắc nghiệm',
+      type: 'multiple',
+      prompt: 'Theo chủ nghĩa Mác – Lênin, tôn giáo là gì?',
+      options: [
+        'Một hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan',
+        'Một chính sách hành chính của Nhà nước',
+        'Một học thuyết khoa học tự nhiên',
+        'Một tổ chức kinh tế xã hội'
+      ],
+      answer: 0,
+      explanation: 'Tôn giáo là hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan; qua đó các lực lượng tự nhiên và xã hội trở thành siêu nhiên, thần bí.'
+    },
+    {
+      kind: 'Trắc nghiệm',
+      shortKind: 'Trắc nghiệm',
+      type: 'multiple',
+      prompt: 'Đâu KHÔNG phải là một trong ba nguồn gốc của tôn giáo?',
+      options: [
+        'Nguồn gốc tự nhiên, kinh tế – xã hội',
+        'Nguồn gốc nhận thức',
+        'Nguồn gốc tâm lý',
+        'Quy định hành chính của Nhà nước'
+      ],
+      answer: 3,
+      explanation: 'Ba nguồn gốc được trình bày là tự nhiên – kinh tế xã hội, nhận thức và tâm lý.'
+    },
+    {
+      kind: 'Trắc nghiệm',
+      shortKind: 'Trắc nghiệm',
+      type: 'multiple',
+      prompt: 'Tính quần chúng của tôn giáo được thể hiện rõ nhất qua nhận định nào?',
+      options: [
+        'Chỉ một nhóm nhỏ bí mật tin theo',
+        'Đông đảo quần chúng tin theo vì tôn giáo đáp ứng nhu cầu tinh thần',
+        'Tôn giáo chỉ thuộc về giai cấp thống trị',
+        'Tôn giáo không có quan hệ với đời sống văn hóa'
+      ],
+      answer: 1,
+      explanation: 'Tính quần chúng phản ánh việc đông đảo nhân dân tin theo; tôn giáo gắn với nhu cầu tinh thần và sinh hoạt văn hóa cộng đồng.'
+    },
+    {
+      kind: 'Trắc nghiệm',
+      shortKind: 'Trắc nghiệm',
+      type: 'multiple',
+      prompt: 'Theo bài học, tính chính trị của tôn giáo xuất hiện khi nào?',
+      options: [
+        'Ngay từ khi con người xuất hiện',
+        'Khi xã hội phân chia giai cấp và có đối kháng lợi ích',
+        'Chỉ khi có mạng Internet',
+        'Khi mọi người cùng một tín ngưỡng'
+      ],
+      answer: 1,
+      explanation: 'Tính chính trị xuất hiện khi xã hội phân chia giai cấp; giai cấp thống trị có thể lợi dụng tôn giáo để bảo vệ quyền lực.'
+    }
+  ];
+
+  var booleanBank = [
+    {
+      kind: 'Đúng / Sai',
+      shortKind: 'Đúng / Sai',
+      type: 'boolean',
+      prompt: 'Mê tín dị đoan là một khái niệm hoàn toàn đồng nhất với tôn giáo.',
+      options: ['Đúng', 'Sai'],
+      answer: 1,
+      explanation: 'Sai. Tôn giáo có giáo lý, tổ chức và được Nhà nước tôn trọng, bảo hộ; còn mê tín dị đoan là mê tín đến mức mê muội, cuồng tín, gây tổn hại cho cá nhân, gia đình, xã hội nên phải bài trừ.'
+    },
+    {
+      kind: 'Đúng / Sai',
+      shortKind: 'Đúng / Sai',
+      type: 'boolean',
+      prompt: 'Tôn trọng quyền tự do tín ngưỡng cũng bao hàm quyền không theo tôn giáo nào.',
+      options: ['Đúng', 'Sai'],
+      answer: 0,
+      explanation: 'Đúng. Quyền tự do tín ngưỡng bao gồm quyền theo, đổi hoặc không theo tôn giáo.'
+    },
+    {
+      kind: 'Đúng / Sai',
+      shortKind: 'Đúng / Sai',
+      type: 'boolean',
+      prompt: 'Tính lịch sử có nghĩa là tôn giáo bất biến và không thay đổi qua các thời kỳ.',
+      options: ['Đúng', 'Sai'],
+      answer: 1,
+      explanation: 'Sai. Tôn giáo ra đời, biến đổi theo điều kiện lịch sử, và chỉ mất đi khi con người làm chủ được tự nhiên, xã hội và bản thân — một quá trình rất lâu dài.'
+    },
+    {
+      kind: 'Đúng / Sai',
+      shortKind: 'Đúng / Sai',
+      type: 'boolean',
+      prompt: 'Có thể dùng mệnh lệnh hành chính, cưỡng chế để nhanh chóng xóa bỏ tôn giáo.',
+      options: ['Đúng', 'Sai'],
+      answer: 1,
+      explanation: 'Sai. Nguyên tắc thứ hai yêu cầu khắc phục dần ảnh hưởng tiêu cực, không dùng cưỡng chế; phải gắn với cải tạo xã hội cũ và xây dựng xã hội mới.'
+    }
+  ];
+
+  // Đuổi hình bắt chữ: ghép tên các hình (có thể đọc chệch âm/dấu) để ra từ khóa.
+  var S = 'stroke="#1b1311" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+  // Ảnh tự thêm: assets/duoi-hinh/<tên-file>.png|.jpg|.jpeg|.webp
+  // Nếu chưa có ảnh, game dùng hình vẽ sẵn bên dưới.
+  var PHOTO_DIR = 'assets/duoi-hinh/';
+  var PHOTO_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+  window.rebusPhotoError = function (img) {
+    var next = Number(img.getAttribute('data-ext') || 0) + 1;
+    if (next < PHOTO_EXTS.length) {
+      img.setAttribute('data-ext', next);
+      img.src = PHOTO_DIR + img.getAttribute('data-file') + '.' + PHOTO_EXTS[next];
+    }
+  };
+  function rebus(file, keys) {
+    return '<div class="rebus">' + keys.map(function (key, i) {
+      var name = file + '-' + (i + 1);
+      return (i ? '<span class="rebus-plus" aria-hidden="true">+</span>' : '') +
+        '<div class="rebus-item">' +
+          '<svg viewBox="0 15 150 130" role="presentation">' + IMG[key](75) + '</svg>' +
+          '<img alt="" data-file="' + name + '" src="' + PHOTO_DIR + name + '.' + PHOTO_EXTS[0] + '"' +
+          ' onload="this.parentNode.classList.add(\'has-photo\')" onerror="rebusPhotoError(this)">' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+  var IMG = {
+    sheet: function (x) { // tấm tôn
+      var d = '', i, xx, top, bottom;
+      for (i = 0; i <= 8; i += 1) {
+        xx = x - 58 + i * 14.5;
+        top = 60 - (xx - (x - 58)) * 0.13;
+        bottom = top + 70;
+        d += 'M' + xx.toFixed(1) + ' ' + top.toFixed(1) + 'V' + bottom.toFixed(1);
+      }
+      return '<path d="M' + (x - 58) + ' 60L' + (x + 58) + ' 45V115L' + (x - 58) + ' 130Z" fill="#c4cad0" ' + S + '/>' +
+        '<path d="' + d + '" stroke="#8b939b" stroke-width="5"/><path d="' + d + '" stroke="#e7eaed" stroke-width="1.5" transform="translate(3 0)"/>' +
+        '<path d="M' + (x - 58) + ' 60L' + (x + 58) + ' 45V115L' + (x - 58) + ' 130Z" fill="none" ' + S + '/>';
+    },
+    spear: function (x) { // cây giáo
+      return '<g transform="rotate(38 ' + x + ' 82)">' +
+        '<path d="M' + x + ' 42V152" stroke="#805b32" stroke-width="7" stroke-linecap="round"/>' +
+        '<path d="M' + x + ' 6L' + (x + 13) + ' 30L' + x + ' 46L' + (x - 13) + ' 30Z" fill="#d6dbe0" ' + S + '/>' +
+        '<path d="M' + (x - 6) + ' 46L' + (x - 12) + ' 66M' + x + ' 46V68M' + (x + 6) + ' 46L' + (x + 12) + ' 66" stroke="#b3121b" stroke-width="4" stroke-linecap="round"/>' +
+        '</g>';
+    },
+    power: function (x) { // nút nguồn
+      return '<rect x="' + (x - 50) + '" y="32" width="100" height="100" rx="20" fill="#efe3c6" ' + S + '/>' +
+        '<path d="M' + (x - 18) + ' 62A28.4 28.4 0 1 0 ' + (x + 18) + ' 62" fill="none" stroke="#1b1311" stroke-width="8" stroke-linecap="round"/>' +
+        '<path d="M' + x + ' 50V86" stroke="#b3121b" stroke-width="8" stroke-linecap="round"/>';
+    },
+    stump: function (x) { // gốc cây
+      return '<path d="M' + (x - 70) + ' 138H' + (x + 70) + '" ' + S + '/>' +
+        '<path d="M' + (x - 40) + ' 134L' + (x - 30) + ' 76H' + (x + 30) + 'L' + (x + 40) + ' 134Z" fill="#9b6a3a" ' + S + '/>' +
+        '<path d="M' + (x - 40) + ' 134Q' + (x - 52) + ' 136 ' + (x - 60) + ' 138M' + (x + 40) + ' 134Q' + (x + 52) + ' 136 ' + (x + 60) + ' 138M' + (x - 12) + ' 92V128M' + (x + 14) + ' 96V124" fill="none" ' + S + '/>' +
+        '<ellipse cx="' + x + '" cy="76" rx="30" ry="9" fill="#e6c38f" ' + S + '/>' +
+        '<ellipse cx="' + x + '" cy="76" rx="17" ry="5" fill="none" stroke="#9b6a3a" stroke-width="2"/>' +
+        '<ellipse cx="' + x + '" cy="76" rx="6" ry="2" fill="none" stroke="#9b6a3a" stroke-width="2"/>';
+    },
+    target: function (x) { // hồng tâm
+      return '<circle cx="' + x + '" cy="85" r="44" fill="#efe3c6" ' + S + '/>' +
+        '<circle cx="' + x + '" cy="85" r="31" fill="#b3121b" ' + S + '/>' +
+        '<circle cx="' + x + '" cy="85" r="18" fill="#efe3c6" ' + S + '/>' +
+        '<circle cx="' + x + '" cy="85" r="7" fill="#b3121b" ' + S + '/>' +
+        '<path d="M' + (x + 4) + ' 81L' + (x + 52) + ' 33" stroke="#1b1311" stroke-width="4" stroke-linecap="round"/>' +
+        '<path d="M' + (x + 44) + ' 30L' + (x + 54) + ' 20L' + (x + 56) + ' 32L' + (x + 66) + ' 33L' + (x + 56) + ' 43Z" fill="#e3a823" ' + S + '/>';
+    },
+    glass: function (x) { // cái ly
+      return '<path d="M' + (x - 26) + ' 76H' + (x + 26) + 'L' + (x + 21) + ' 134H' + (x - 21) + 'Z" fill="#8fc0d0"/>' +
+        '<path d="M' + (x - 30) + ' 34H' + (x + 30) + 'L' + (x + 21) + ' 134H' + (x - 21) + 'Z" fill="rgba(220,238,242,.35)" ' + S + '/>' +
+        '<path d="M' + (x - 26) + ' 76H' + (x + 26) + '" stroke="#1b1311" stroke-width="2"/>' +
+        '<path d="M' + (x - 18) + ' 46L' + (x - 13) + ' 120" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>';
+    },
+    calculator: function (x) { // máy tính
+      var b = '', r, c;
+      for (r = 0; r < 4; r += 1) {
+        for (c = 0; c < 3; c += 1) {
+          b += '<rect x="' + (x - 23 + c * 16) + '" y="' + (72 + r * 15) + '" width="11" height="10" rx="2" fill="' + (r === 3 && c === 2 ? '#b3121b' : '#efe3c6') + '"/>';
+        }
+      }
+      return '<rect x="' + (x - 32) + '" y="28" width="64" height="112" rx="9" fill="#3a3330" ' + S + '/>' +
+        '<rect x="' + (x - 24) + '" y="38" width="48" height="24" rx="3" fill="#c9d8b0"/>' +
+        '<path d="M' + (x + 4) + ' 50H' + (x + 18) + '" stroke="#3a3330" stroke-width="3"/>' + b;
+    },
+    calendar: function (x) { // tờ lịch
+      return '<rect x="' + (x - 44) + '" y="40" width="88" height="96" rx="5" fill="#fffaf0" ' + S + '/>' +
+        '<path d="M' + (x - 44) + ' 66V45a5 5 0 0 1 5-5H' + (x + 39) + 'a5 5 0 0 1 5 5V66Z" fill="#b3121b" ' + S + '/>' +
+        '<path d="M' + (x - 22) + ' 30V50M' + (x + 22) + ' 30V50" stroke="#1b1311" stroke-width="6" stroke-linecap="round"/>' +
+        '<text x="' + x + '" y="120" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="44" fill="#1b1311">24</text>';
+    },
+    vase: function (x) { // bình sứ
+      return '<path d="M' + (x - 14) + ' 32H' + (x + 14) + 'V44C' + (x + 14) + ' 54 ' + (x + 36) + ' 64 ' + (x + 36) + ' 94C' + (x + 36) + ' 122 ' + (x + 20) + ' 136 ' + x + ' 136C' + (x - 20) + ' 136 ' + (x - 36) + ' 122 ' + (x - 36) + ' 94C' + (x - 36) + ' 64 ' + (x - 14) + ' 54 ' + (x - 14) + ' 44Z" fill="#f8f5ee" ' + S + '/>' +
+        '<path d="M' + (x - 13) + ' 44H' + (x + 13) + 'M' + (x - 30) + ' 78H' + (x + 30) + 'M' + (x - 31) + ' 116H' + (x + 31) + '" stroke="#2d5d9f" stroke-width="3"/>' +
+        '<path d="M' + (x - 30) + ' 96Q' + (x - 15) + ' 84 ' + x + ' 96T' + (x + 30) + ' 96" fill="none" stroke="#2d5d9f" stroke-width="3"/>' +
+        '<circle cx="' + x + '" cy="62" r="6" fill="none" stroke="#2d5d9f" stroke-width="3"/>';
+    }
+  };
+
+  var visualBank = [
+    {
+      kind: 'Đuổi hình bắt chữ',
+      shortKind: 'Đoán hình',
+      type: 'visual',
+      clue: rebus('ton-giao', ['sheet', 'spear']),
+      clueLabel: 'Hình 1: nhiều bàn tay giơ chữ Respect. Hình 2: một vị giáo hoàng cầm thánh giá.',
+      answerText: ['tôn giáo'],
+      explanation: 'TÔN trọng (Respect) + GIÁO hoàng = TÔN GIÁO — hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan.'
+    },
+    {
+      kind: 'Đuổi hình bắt chữ',
+      shortKind: 'Đoán hình',
+      type: 'visual',
+      clue: rebus('nguon-goc', ['power', 'stump']),
+      clueLabel: 'Hình 1: nút bật tắt thiết bị. Hình 2: phần thân cây còn lại sát đất sau khi chặt.',
+      answerText: ['nguồn gốc'],
+      explanation: 'Nút NGUỒN + GỐC cây = NGUỒN GỐC. Tôn giáo có ba nguồn gốc: tự nhiên – kinh tế xã hội, nhận thức và tâm lý.'
+    },
+    {
+      kind: 'Đuổi hình bắt chữ',
+      shortKind: 'Đoán hình',
+      type: 'visual',
+      clue: rebus('tam-ly', ['target', 'glass']),
+      clueLabel: 'Hình 1: bia bắn cung. Hình 2: nhà khoa học Einstein với công thức E=mc².',
+      answerText: ['tâm lý', 'tâm lí'],
+      explanation: 'Hồng TÂM + nhà vật LÝ Einstein = TÂM LÝ. Nguồn gốc tâm lý: sự sợ hãi, lo lắng trước tự nhiên và xã hội; lòng biết ơn, kính trọng người có công — “Sự sợ hãi sinh ra thần thánh”.'
+    },
+    {
+      kind: 'Đuổi hình bắt chữ',
+      shortKind: 'Đoán hình',
+      type: 'visual',
+      clue: rebus('tinh-lich-su', ['calculator', 'calendar', 'vase']),
+      clueLabel: 'Hình 1: máy tính cầm tay. Hình 2: tờ lịch năm. Hình 3: cuốn sách mở với chữ History.',
+      answerText: ['tính lịch sử'],
+      explanation: 'Máy TÍNH + tờ LỊCH + History (lịch SỬ) = TÍNH LỊCH SỬ: tôn giáo ra đời, tồn tại và biến đổi theo những giai đoạn lịch sử nhất định.'
+    }
+  ];
+
+  var stage = document.getElementById('game-stage');
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.game-tile'));
+  var dialog = document.getElementById('game-dialog');
+  var closeButton = document.getElementById('dialog-close');
+  var answerOptions = document.getElementById('answer-options');
+  var judge = document.getElementById('judge');
+  var judgeButtons = Array.prototype.slice.call(judge.querySelectorAll('button'));
+  var feedback = document.getElementById('question-feedback');
+  var clue = document.getElementById('question-clue');
+  var questionTitle = document.getElementById('question-title');
+  var progress = document.getElementById('game-progress');
+  var progressBar = document.getElementById('game-progress-bar');
+  var completeMessage = document.getElementById('game-complete');
+  var resetButton = document.getElementById('game-reset');
+  var testMode = document.getElementById('test-mode');
+  var testToolbar = document.getElementById('test-toolbar');
+  var revealAllButton = document.getElementById('reveal-all');
+  var questions = [];
+  var states = [];
+  var currentQuestion = -1;
+  var solveTimer = null;
+
+  function shuffle(items) {
+    var copy = items.slice();
+    for (var i = copy.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temporary = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temporary;
+    }
+    return copy;
+  }
+
+  function createRound() {
+    return shuffle(
+      shuffle(visualBank).slice(0, 3)
+        .concat(shuffle(choiceBank).slice(0, 2))
+        .concat(shuffle(booleanBank).slice(0, 1))
+    );
+  }
+
+
+  function updateProgress() {
+    var solved = states.filter(function (state) { return state === true; }).length;
+    var total = questions.length || 6;
+    progress.textContent = solved;
+    progressBar.style.width = (solved / total * 100) + '%';
+    stage.classList.toggle('is-complete', solved === total);
+    if (solved === total) {
+      completeMessage.textContent = testMode.checked
+        ? 'Đã mở toàn bộ tranh trong chế độ test.'
+        : 'Bức tranh đã mở hoàn toàn — bạn đã chinh phục cả 6 câu hỏi!';
+    } else {
+      completeMessage.textContent = '';
+    }
+  }
+
+  function setFeedback(correct, explanation) {
+    feedback.hidden = false;
+    feedback.classList.toggle('is-wrong', !correct);
+    feedback.innerHTML = '<strong>' + (correct ? 'Chính xác!' : 'Chưa đúng.') + '</strong> ' + explanation;
+  }
+
+  function revealTile(index) {
+    var tile = tiles[index];
+    states[index] = true;
+    tile.disabled = true;
+    tile.classList.remove('is-locked');
+    tile.classList.add('is-revealed');
+    tile.setAttribute('aria-label', 'Câu ' + (index + 1) + ' đã mở');
+    updateProgress();
+  }
+
+  function lockTile(index, solved) {
+    var tile = tiles[index];
+    states[index] = solved;
+    tile.disabled = true;
+    if (solved) {
+      tile.classList.add('is-revealed');
+      tile.setAttribute('aria-label', 'Câu ' + (index + 1) + ' đã trả lời đúng');
+    } else {
+      tile.classList.add('is-locked');
+      tile.setAttribute('aria-label', 'Câu ' + (index + 1) + ' đã khóa do trả lời sai');
+      tile.querySelector('.tile-state').textContent = 'Đã khóa';
+      tile.querySelector('.tile-mark').textContent = '×';
+    }
+    updateProgress();
+  }
+
+  function finishAnswer(correct) {
+    if (currentQuestion < 0 || states[currentQuestion] !== null) return;
+    var question = questions[currentQuestion];
+    Array.prototype.forEach.call(answerOptions.querySelectorAll('button'), function (button, index) {
+      button.disabled = true;
+      if (index === question.answer) button.classList.add('is-correct');
+    });
+    judgeButtons.forEach(function (button) { button.disabled = true; });
+    setFeedback(correct, question.explanation);
+    lockTile(currentQuestion, correct);
+    if (correct) {
+      solveTimer = window.setTimeout(function () {
+        if (dialog.open) dialog.close();
+      }, 950);
+    }
+  }
+
+  function chooseOption(button, optionIndex) {
+    var question = questions[currentQuestion];
+    if (!question || states[currentQuestion] !== null) return;
+    if (optionIndex !== question.answer) button.classList.add('is-wrong');
+    finishAnswer(optionIndex === question.answer);
+  }
+
+  // Chế độ test: mở câu hỏi kèm sẵn đáp án, đồng thời lật ô.
+  function previewQuestion(index) {
+    if (states[index] !== null) return;
+    openQuestion(index);
+    var question = questions[index];
+    var answerLabel;
+    if (question.answerText) {
+      answerLabel = question.answerText[0];
+      judge.hidden = true;
+    } else {
+      answerLabel = question.options[question.answer];
+      Array.prototype.forEach.call(answerOptions.querySelectorAll('button'), function (button, optionIndex) {
+        button.disabled = true;
+        if (optionIndex === question.answer) button.classList.add('is-correct');
+      });
+    }
+    feedback.hidden = false;
+    feedback.classList.remove('is-wrong');
+    feedback.innerHTML = '<strong>Đáp án: ' + answerLabel + '</strong><br>' + question.explanation;
+    revealTile(index);
+  }
+
+  function openQuestion(index) {
+    if (states[index] !== null) return;
+    var question = questions[index];
+    currentQuestion = index;
+    judgeButtons.forEach(function (button) { button.disabled = false; });
+    judge.hidden = question.answerText === undefined;
+    answerOptions.hidden = question.answerText !== undefined;
+    answerOptions.innerHTML = '';
+    feedback.hidden = true;
+    feedback.textContent = '';
+    feedback.classList.remove('is-wrong');
+    document.getElementById('question-kind').textContent = question.kind;
+    document.getElementById('question-count').textContent = 'Câu ' + (index + 1) + ' / ' + questions.length;
+    // Đuổi hình bắt chữ chỉ hiện hình, không có lời dẫn.
+    questionTitle.hidden = !question.prompt;
+    questionTitle.textContent = question.prompt || '';
+    clue.classList.toggle('is-visible', Boolean(question.clue));
+    clue.innerHTML = question.clue || '';
+    clue.setAttribute('aria-label', question.clueLabel || '');
+
+    if (question.options) {
+      question.options.forEach(function (option, optionIndex) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'answer-option';
+        button.textContent = option;
+        button.addEventListener('click', function () {
+          chooseOption(button, optionIndex);
+        });
+        answerOptions.appendChild(button);
+      });
+    }
+
+    dialog.showModal();
+  }
+
+  function resetGame() {
+    window.clearTimeout(solveTimer);
+    if (dialog.open) dialog.close();
+    questions = createRound();
+    states = questions.map(function () { return null; });
+    currentQuestion = -1;
+    tiles.forEach(function (tile, index) {
+      tile.disabled = false;
+      tile.classList.remove('is-locked', 'is-revealed');
+      tile.setAttribute('aria-label', 'Mở câu ' + (index + 1));
+      tile.querySelector('.tile-state').textContent = 'Mở ô ' + (index + 1);
+      tile.querySelector('.tile-mark').textContent = '?';
+    });
+    updateProgress();
+  }
+
+  tiles.forEach(function (tile, index) {
+    tile.addEventListener('click', function () {
+      if (testMode.checked) {
+        previewQuestion(index);
+      } else {
+        openQuestion(index);
+      }
+    });
+  });
+
+  // Người dẫn chương trình tự chấm: Đúng thì mở ô, Sai thì khóa ô.
+  document.getElementById('judge-yes').addEventListener('click', function () { finishAnswer(true); });
+  document.getElementById('judge-no').addEventListener('click', function () { finishAnswer(false); });
+
+  closeButton.addEventListener('click', function () { dialog.close(); });
+  resetButton.addEventListener('click', resetGame);
+
+  testMode.addEventListener('change', function () {
+    document.body.classList.toggle('body-test', testMode.checked);
+    testToolbar.hidden = !testMode.checked;
+    resetGame();
+  });
+
+  revealAllButton.addEventListener('click', function () {
+    tiles.forEach(function (_, index) { revealTile(index); });
+  });
+
+  resetGame();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sổ tay Nhóm 5 CNXHKH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Lora:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+/* Layout: one reading column; slot cards up top open one panel each (all closed on load); green = phần của Nhóm 5, gạch = phần phản biện nhóm khác */
+:root {
+  --bg: #f6f8f7;
+  --surface: #ffffff;
+  --ink: #17211d;
+  --muted: #56645f;
+  --line: #dbe3df;
+  --accent: #1d5c4a;
+  --accent-soft: #e2efe9;
+  --brick: #a3412c;
+  --brick-soft: #f7e7e2;
+  --gold: #8a5d0b;
+  --gold-soft: #f7eed9;
+  --font-display: "Lora", "Noto Serif", Georgia, serif;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614; --surface: #19201d; --ink: #e5ece9; --muted: #9baba4; --line: #2a3430;
+    --accent: #72c6a8; --accent-soft: #1b2f28; --brick: #e8917a; --brick-soft: #362420;
+    --gold: #e0b45e; --gold-soft: #33291a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111614; --surface: #19201d; --ink: #e5ece9; --muted: #9baba4; --line: #2a3430;
+  --accent: #72c6a8; --accent-soft: #1b2f28; --brick: #e8917a; --brick-soft: #362420;
+  --gold: #e0b45e; --gold-soft: #33291a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15.5px; line-height: 1.65;
+}
+.wrap {
+  max-width: 920px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; line-height: 1.25; margin: 0; }
+p { margin: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; }
+li + li { margin-top: 4px; }
+strong { font-weight: 600; }
+a { color: var(--accent); }
+.eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+
+/* Header */
+header.top { padding-block: 40px 28px; display: grid; gap: 14px; }
+header.top h1 { font-size: clamp(30px, 5vw, 42px); font-weight: 700; }
+header.top h1 em { font-style: italic; color: var(--accent); font-weight: 600; }
+header.top .lead { max-width: 62ch; color: var(--muted); }
+.game-link {
+  justify-self: start; padding: 9px 15px; border-radius: 8px;
+  background: var(--accent); color: var(--surface); font-size: 14px; font-weight: 600;
+  text-decoration: none;
+}
+.game-link:hover { filter: brightness(1.08); }
+
+/* Slot cards */
+.timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-bottom: 28px; }
+.timeline:has(.slot[aria-expanded="true"]) { padding-bottom: 0; }
+.slot {
+  font: inherit; color: inherit; text-align: left; cursor: pointer; width: 100%;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px 16px; display: grid; gap: 6px; align-content: start;
+  transition: border-color .15s, background-color .15s, box-shadow .15s;
+}
+.slot:hover { border-color: var(--muted); }
+.slot .when { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.slot .num { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.slot .role { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.slot.critique .role { background: var(--brick-soft); color: var(--brick); }
+.slot.present { border-color: var(--accent); }
+.slot.present .role { background: var(--accent); color: var(--surface); }
+.slot .desc { font-size: 14px; }
+.slot .tiet { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.slot .more { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 4px; display: inline-flex; gap: 6px; align-items: center; }
+.slot .more::after { content: "▾"; transition: transform .15s; }
+.slot.critique[aria-expanded="true"] { border-color: var(--brick); background: var(--brick-soft); box-shadow: 0 0 0 1px var(--brick); }
+.slot.critique[aria-expanded="true"] .role { background: var(--surface); }
+.slot.present[aria-expanded="true"] { background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+.slot.critique[aria-expanded="true"] .more { color: var(--brick); }
+.slot.present[aria-expanded="true"] .more { color: var(--accent); }
+.slot[aria-expanded="true"] .more::after { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .slot, .slot .more::after { transition: none; } }
+.hint { font-size: 14px; color: var(--muted); padding-bottom: 48px; }
+
+/* In-panel jump links */
+nav.jump {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; gap: 4px; overflow-x: auto; padding-block: 8px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+nav.jump a {
+  flex: none; text-decoration: none; color: var(--muted); font-weight: 500; font-size: 14px;
+  padding: 7px 14px; border-radius: 8px;
+}
+nav.jump a:hover { background: var(--surface); color: var(--ink); }
+nav.jump a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Panels */
+section.part { padding-block: 20px 8px; display: grid; gap: 22px; }
+.slot-sub { display: grid; gap: 18px; padding-top: 20px; }
+.slot-sub > .head { display: grid; gap: 8px; }
+.slot-sub > .head h2 { font-size: clamp(24px, 3.6vw, 30px); }
+.slot-sub > .head p { color: var(--muted); max-width: 66ch; }
+.note {
+  font-size: 14px; padding: 12px 14px; border-radius: 8px; background: var(--gold-soft); max-width: 72ch;
+}
+.note b { color: var(--gold); }
+
+.scope {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+  font-size: 14px; display: grid; gap: 6px;
+}
+
+/* Question cards */
+.qlist { display: grid; gap: 12px; }
+.q {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; display: grid; gap: 10px;
+}
+.q .qhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.q .qid { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--brick); min-width: 2.2em; }
+.answer-list .q .qid { color: var(--accent); }
+.chip { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.chip.who { background: var(--brick-soft); color: var(--brick); border-color: transparent; }
+.chip.who.backup { background: var(--bg); color: var(--muted); border-color: var(--line); }
+.chip.who.ours { background: var(--accent-soft); color: var(--accent); }
+.q .copy {
+  margin-left: auto; font: inherit; font-size: 12.5px; font-weight: 500; color: var(--muted);
+  background: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer;
+}
+.q .copy:hover { color: var(--ink); border-color: var(--muted); }
+.q .text { font-size: 16px; font-weight: 500; }
+.q .why { font-size: 14px; color: var(--muted); }
+.q .why b { color: var(--ink); font-weight: 600; }
+details { font-size: 14.5px; }
+details summary {
+  cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; display: inline-flex; align-items: center; gap: 6px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "▸"; transition: transform .15s; display: inline-block; }
+details[open] summary::before { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { details summary::before { transition: none; } }
+details .ans { margin-top: 8px; padding: 12px 14px; background: var(--accent-soft); border-radius: 8px; display: grid; gap: 6px; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--bg); }
+td.mem { white-space: nowrap; }
+.mem-badge {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: var(--surface); font-weight: 700; font-size: 13px;
+}
+td .sub { display: block; color: var(--muted); font-size: 13px; margin-top: 3px; }
+.num { font-variant-numeric: tabular-nums; }
+.cmp table { min-width: 560px; }
+
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card h4 { font-size: 17px; }
+.steps { list-style: none; padding: 0; display: grid; gap: 10px; }
+.steps li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; margin: 0; font-size: 14px; }
+.steps .t { font-weight: 600; color: var(--gold); font-size: 13px; }
+.rules li { font-size: 14px; }
+
+/* Knowledge cards */
+.k { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.k h4 { font-size: 18px; color: var(--accent); }
+#slot-6 .k h4, #slot-7 .k h4 { color: var(--brick); }
+.k h5 { font-size: 14px; font-weight: 600; margin: 4px 0 0; letter-spacing: .01em; }
+.k p, .k li { font-size: 14.5px; max-width: 70ch; }
+.k .owner { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); justify-self: start; }
+.say { padding: 12px 14px; border: 1px dashed var(--accent); border-radius: 8px; font-size: 14px; max-width: 72ch; }
+.say b { color: var(--accent); }
+.slide-idea, .muted-s { font-size: 13.5px; color: var(--muted); }
+.slide-idea b { color: var(--ink); }
+.quiz { display: grid; gap: 10px; }
+.quiz li { margin: 0; }
+.quiz span { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.quote {
+  font-family: var(--font-display); font-style: italic; font-size: 16px; line-height: 1.55;
+  padding: 12px 16px; background: var(--gold-soft); border-radius: 8px;
+}
+.quote cite { display: block; font-family: var(--font-body); font-style: normal; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.remember { padding: 12px 14px; background: var(--accent-soft); border-radius: 8px; font-size: 14px; }
+.remember b { color: var(--accent); }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mini { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.mini b { font-size: 14px; }
+.mini span { font-size: 13.5px; color: var(--muted); }
+
+.footnote { padding-block: 36px 56px; font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+
+@media (max-width: 720px) {
+  .timeline, .two, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .steps li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .q { padding: 14px; }
+  .k { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <span class="eyebrow">MLN131 · Chủ nghĩa xã hội khoa học</span>
+  <h1>Sổ tay <em>Nhóm 5</em></h1>
+  <p class="lead">Nội dung Nhóm 3 và Nhóm 4 thuyết trình kèm câu hỏi phản biện, phân công 5 thành viên và kiến thức phần tôn giáo Nhóm 5 trình bày. Phạm vi thuyết trình lấy theo các mục ghi “(SV thuyết trình)” trong file phân nhóm.</p>
+  <a class="game-link" href="game.html">Chơi game lật tranh →</a>
+</header>
+
+<div class="wrap timeline" aria-label="Lịch của Nhóm 5">
+  <button class="slot critique" type="button" aria-expanded="false" aria-controls="slot-6">
+    <span class="when"><span class="num">Slot 6</span><span class="role">Phản biện</span></span>
+    <span class="desc">Nhóm 3 thuyết trình. Nhóm 4 và 5 phản biện.</span>
+    <span class="tiet">Tiết 18 · Cơ cấu xã hội – giai cấp trong thời kỳ quá độ</span>
+    <span class="more">Xem nội dung</span>
+  </button>
+  <button class="slot critique" type="button" aria-expanded="false" aria-controls="slot-7">
+    <span class="when"><span class="num">Slot 7</span><span class="role">Phản biện</span></span>
+    <span class="desc">Nhóm 4 thuyết trình. Nhóm 5 và 6 phản biện.</span>
+    <span class="tiet">Tiết 20 · Cơ cấu xã hội – giai cấp và liên minh ở Việt Nam</span>
+    <span class="more">Xem nội dung</span>
+  </button>
+  <button class="slot present" type="button" aria-expanded="false" aria-controls="slot-8">
+    <span class="when"><span class="num">Slot 8</span><span class="role">Thuyết trình</span></span>
+    <span class="desc">Nhóm 5 thuyết trình. Nhóm 6 và 7 phản biện.</span>
+    <span class="tiet">Tiết 24 · Quan điểm của chủ nghĩa Mác – Lênin về tôn giáo</span>
+    <span class="more">Xem nội dung</span>
+  </button>
+</div>
+<p class="wrap hint" id="slot-hint">Chọn một slot để xem nội dung.</p>
+
+<main class="wrap">
+
+<!-- ================= SLOT 6 ================= -->
+<section class="part slot-panel" id="slot-6" hidden>
+  <nav class="jump" aria-label="Nội dung Slot 6">
+    <a href="#s6-noi-dung">Nội dung Nhóm 3</a>
+    <a href="#s6-cau-hoi">Câu hỏi phản biện</a>
+  </nav>
+
+  <div class="slot-sub" id="s6-noi-dung">
+    <div class="head">
+      <span class="eyebrow">Slot 6 · Nhóm 3 thuyết trình</span>
+      <h2>Cơ cấu xã hội – giai cấp trong thời kỳ quá độ</h2>
+      <p>Chương 5, mục I. Giáo trình tr. 165–173, slide Tiết 18.</p>
+    </div>
+    <p class="note"><b>Phạm vi:</b> Nhóm 3 trình bày I.1 và I.2 (hai mục ghi “SV thuyết trình”). Tiết 16–17 của slot này (phòng, chống tham nhũng) do giảng viên giảng.</p>
+
+    <div class="k">
+      <h4>I.1. Khái niệm và vị trí của cơ cấu xã hội – giai cấp</h4>
+      <h5>Cơ cấu xã hội</h5>
+      <p>Là những cộng đồng người cùng toàn bộ những mối quan hệ xã hội do sự tác động lẫn nhau của các cộng đồng ấy tạo nên. Có nhiều loại: cơ cấu xã hội – <b>dân cư</b>, – <b>nghề nghiệp</b>, – <b>giai cấp</b>, – <b>dân tộc</b>, – <b>tôn giáo</b>.</p>
+      <h5>Cơ cấu xã hội – giai cấp</h5>
+      <p>Là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan trong một chế độ xã hội nhất định, thông qua các mối quan hệ về <b>sở hữu tư liệu sản xuất</b>, về <b>tổ chức quản lý quá trình sản xuất</b>, về <b>địa vị chính trị – xã hội</b>… giữa các giai cấp, tầng lớp đó.</p>
+      <p>Trong thời kỳ quá độ, cơ cấu này gồm: giai cấp công nhân, giai cấp nông dân, đội ngũ trí thức, đội ngũ doanh nhân, tầng lớp tiểu chủ, tiểu thương…</p>
+      <div class="quote">“Người ta gọi là giai cấp, những tập đoàn to lớn gồm những người khác nhau về địa vị của họ trong một hệ thống sản xuất xã hội nhất định trong lịch sử, khác nhau về quan hệ của họ đối với những tư liệu sản xuất, về vai trò của họ trong tổ chức lao động xã hội, và như vậy là khác nhau về cách thức hưởng thụ và về phần của cải xã hội ít hoặc nhiều mà họ được hưởng.”<cite>V.I. Lênin, Sáng kiến vĩ đại (1919). Dùng để hỏi vì sao trí thức chỉ là “tầng lớp”.</cite></div>
+      <h5>Vị trí: quan trọng hàng đầu, chi phối các loại cơ cấu xã hội khác, vì</h5>
+      <ul>
+        <li>Liên quan đến đảng phái chính trị và nhà nước; đến sở hữu tư liệu sản xuất, tổ chức quản lý lao động, phân phối thu nhập.</li>
+        <li>Sự biến đổi của nó kéo theo sự biến đổi của các cơ cấu xã hội khác và của toàn bộ cơ cấu xã hội.</li>
+        <li>Là căn cứ cơ bản để xây dựng chính sách phát triển kinh tế, văn hóa, xã hội trong từng giai đoạn.</li>
+      </ul>
+      <p>Các cơ cấu xã hội khác cũng <b>tác động trở lại</b> cơ cấu xã hội – giai cấp.</p>
+    </div>
+
+    <div class="k">
+      <h4>I.2. Ba quy luật biến đổi trong thời kỳ quá độ</h4>
+      <ol>
+        <li><b>Biến đổi gắn liền và bị quy định bởi cơ cấu kinh tế</b> của thời kỳ quá độ: phương thức sản xuất, cơ cấu ngành nghề, thành phần kinh tế, cơ chế kinh tế thay đổi thì cơ cấu xã hội – giai cấp thay đổi theo.</li>
+        <li><b>Biến đổi phức tạp, đa dạng, làm xuất hiện các tầng lớp xã hội mới.</b> Nhiều thành phần kinh tế, nhiều ngành nghề dẫn đến nhiều giai cấp, tầng lớp, nhóm người khác nhau.</li>
+        <li><b>Biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh</b>, từng bước xóa bỏ bất bình đẳng xã hội, dẫn đến sự xích lại gần nhau giữa các giai cấp, tầng lớp.</li>
+      </ol>
+      <div class="remember"><b>Ví dụ Việt Nam để đối chiếu:</b> trước Đổi mới (1986), kinh tế chủ yếu có hai thành phần (quốc doanh, tập thể) nên cơ cấu xã hội giản đơn, thường gọi là “hai giai cấp, một tầng lớp”. Sau Đổi mới, kinh tế nhiều thành phần làm xuất hiện doanh nhân, chủ doanh nghiệp tư nhân, công nhân khu vực FDI, lao động tự do.</div>
+    </div>
+  </div>
+
+  <div class="slot-sub" id="s6-cau-hoi">
+    <div class="head">
+      <span class="eyebrow">Slot 6 · Phản biện</span>
+      <h2>Câu hỏi phản biện Nhóm 3</h2>
+      <p>Mỗi thành viên hỏi một câu chính (C1–C5). Nếu Nhóm 3 đã trả lời trong bài thì dùng câu dự phòng (D1–D3). Thống nhất với Nhóm 4 trước để không hỏi trùng.</p>
+    </div>
+    <div class="qlist">
+      <article class="q">
+        <div class="qhead"><span class="qid">C1</span><span class="chip who">TV1</span><span class="chip">Khái niệm</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Nhóm gọi là “cơ cấu xã hội – giai cấp” nhưng lại liệt kê cả “tầng lớp” trí thức. Vì sao trí thức chỉ là một tầng lớp mà không phải một giai cấp?</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra nhóm có nắm tiêu chí phân chia giai cấp của Lênin hay chỉ học thuộc danh sách.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Theo định nghĩa của Lênin, giai cấp khác nhau ở <b>địa vị trong hệ thống sản xuất và quan hệ với tư liệu sản xuất</b>. Trí thức không có quan hệ sở hữu riêng với tư liệu sản xuất, không có phương thức sản xuất riêng, và xuất thân từ nhiều giai cấp khác nhau. Họ là nhóm lao động trí óc phục vụ các giai cấp, nên chỉ là tầng lớp.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C2</span><span class="chip who">TV2</span><span class="chip">Vận dụng</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Quy luật thứ nhất nói cơ cấu xã hội – giai cấp bị quy định bởi cơ cấu kinh tế. Nhóm hãy chứng minh quy luật này bằng thay đổi của xã hội Việt Nam trước và sau Đổi mới 1986.</p>
+        <p class="why"><b>Mục đích:</b> buộc nhóm đưa ví dụ Việt Nam thay vì chỉ đọc lại câu chữ của quy luật.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Trước 1986: chủ yếu kinh tế quốc doanh và tập thể, nên cơ cấu xã hội giản đơn, “hai giai cấp, một tầng lớp” (công nhân, nông dân tập thể, trí thức).</p>
+          <p>Sau 1986: kinh tế nhiều thành phần, mở cửa hội nhập, nên xuất hiện doanh nhân, chủ doanh nghiệp tư nhân, tiểu chủ, công nhân trong doanh nghiệp FDI, lao động tự do. Chuyển dịch cơ cấu ngành làm nông dân giảm, công nhân và lao động dịch vụ tăng.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C3</span><span class="chip who">TV3</span><span class="chip">Lập luận</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Quy luật 2 nói cơ cấu xã hội ngày càng đa dạng, xuất hiện thêm tầng lớp mới. Quy luật 3 lại nói các giai cấp, tầng lớp xích lại gần nhau. Hai quy luật này có mâu thuẫn không?</p>
+        <p class="why"><b>Mục đích:</b> tìm chỗ có vẻ mâu thuẫn ngay trong slide để xem nhóm có lập luận biện chứng được không.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Không mâu thuẫn mà thống nhất biện chứng. Quy luật 2 mô tả <b>sự đa dạng về hình thức</b> do nhiều thành phần kinh tế cùng tồn tại. Quy luật 3 mô tả <b>xu hướng lâu dài về bản chất</b>: các giai tầng ngày càng gần nhau về lợi ích, địa vị, cơ hội phát triển, trên nền tảng liên minh. Đây là đa dạng trong thống nhất.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C4</span><span class="chip who">TV4</span><span class="chip">Phân biệt</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">“Xích lại gần nhau, từng bước xóa bỏ bất bình đẳng” có nghĩa là tiến tới cào bằng thu nhập không? Nếu không thì chênh lệch giàu nghèo hiện nay được nhìn nhận thế nào?</p>
+        <p class="why"><b>Mục đích:</b> tránh cách hiểu bình quân chủ nghĩa và kéo vấn đề về thực tế.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Không phải cào bằng. Xóa bỏ bất bình đẳng là xóa dần sự khác biệt về <b>địa vị và cơ hội</b> (tiếp cận giáo dục, y tế, việc làm, quyền làm chủ). Trong kinh tế thị trường định hướng XHCN, phân phối theo lao động và hiệu quả kinh tế vẫn tạo chênh lệch thu nhập hợp pháp. Nhà nước khuyến khích làm giàu chính đáng, đồng thời giảm nghèo và bảo đảm an sinh để chênh lệch không quá lớn.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C5</span><span class="chip who">TV5</span><span class="chip">Lập luận</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Quy luật 3 nói các giai cấp biến đổi “vừa đấu tranh, vừa liên minh”. Vậy ở Việt Nam hiện nay còn đấu tranh giai cấp không? Nếu còn thì đấu tranh với ai, về cái gì?</p>
+        <p class="why"><b>Mục đích:</b> câu hỏi khó, kiểm tra nhóm có hiểu “đấu tranh” trong thời kỳ quá độ khác với thời kỳ giành chính quyền.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Vẫn còn, nhưng nội dung đã thay đổi. Theo văn kiện của Đảng, nội dung chủ yếu của đấu tranh giai cấp hiện nay là <b>thực hiện thắng lợi công nghiệp hóa, hiện đại hóa theo định hướng XHCN, khắc phục tình trạng nước nghèo, kém phát triển; thực hiện công bằng xã hội, chống áp bức, bất công; đấu tranh với tư tưởng, hành động tiêu cực, sai trái và âm mưu chống phá của các thế lực thù địch</b>.</p>
+          <p>Đây không phải là đấu tranh để tiêu diệt một giai cấp nào.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D1</span><span class="chip who backup">Dự phòng</span><span class="chip">Khái niệm</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Trong các loại cơ cấu xã hội (dân cư, nghề nghiệp, dân tộc, tôn giáo, giai cấp), vì sao cơ cấu xã hội – giai cấp giữ vị trí hàng đầu? Hãy nêu một ví dụ cơ cấu khác tác động ngược trở lại nó.</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra phần “vị trí” và quan hệ tác động hai chiều.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Cơ cấu xã hội – giai cấp gắn với sở hữu tư liệu sản xuất, tổ chức quản lý sản xuất, phân phối thu nhập, và với đảng phái, nhà nước. Nó là căn cứ để hoạch định chính sách.</p>
+          <p><b>Ví dụ tác động ngược:</b> đô thị hóa (cơ cấu dân cư) khiến một bộ phận nông dân chuyển thành công nhân hoặc lao động dịch vụ, làm thay đổi cơ cấu giai cấp.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D2</span><span class="chip who backup">Dự phòng</span><span class="chip">Thực tiễn</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Quy luật 2 nói xuất hiện “các tầng lớp xã hội mới”. Tài xế công nghệ, người làm freelance hay KOL bán hàng online thuộc giai cấp, tầng lớp nào?</p>
+        <p class="why"><b>Mục đích:</b> câu hỏi mở để kiểm tra khả năng vận dụng tiêu chí phân chia giai cấp.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Không có đáp án duy nhất. Nhóm bạn cần dùng <b>tiêu chí quan hệ với tư liệu sản xuất và vị trí trong tổ chức lao động</b> để lập luận.</p>
+          <p>Ví dụ, tài xế công nghệ sở hữu xe nhưng phụ thuộc nền tảng về giá và phân phối việc, nên gần với người lao động làm thuê trong lĩnh vực dịch vụ. Chính sự khó xếp loại này minh chứng cho tính “phức tạp, đa dạng” của quy luật.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D3</span><span class="chip who backup">Dự phòng</span><span class="chip">Liên hệ</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Nhóm nói cơ cấu xã hội – giai cấp là căn cứ để xây dựng chính sách. Hãy cho ví dụ chính sách cụ thể của Đảng, Nhà nước được xây dựng cho từng giai cấp, tầng lớp.</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra nhóm có liên hệ được lý thuyết với văn kiện thực tế.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Hội nghị Trung ương 6 và 7 khóa X (năm 2008) ra ba nghị quyết riêng cho ba lực lượng nòng cốt: <b>Nghị quyết 20-NQ/TW</b> về giai cấp công nhân, <b>Nghị quyết 26-NQ/TW</b> về nông nghiệp, nông dân, nông thôn, <b>Nghị quyết 27-NQ/TW</b> về đội ngũ trí thức. Gần đây có <b>Nghị quyết 41-NQ/TW</b> (2023) về đội ngũ doanh nhân.</p>
+        </div></details>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SLOT 7 ================= -->
+<section class="part slot-panel" id="slot-7" hidden>
+  <nav class="jump" aria-label="Nội dung Slot 7">
+    <a href="#s7-noi-dung">Nội dung Nhóm 4</a>
+    <a href="#s7-cau-hoi">Câu hỏi phản biện</a>
+  </nav>
+
+  <div class="slot-sub" id="s7-noi-dung">
+    <div class="head">
+      <span class="eyebrow">Slot 7 · Nhóm 4 thuyết trình</span>
+      <h2>Cơ cấu xã hội – giai cấp và liên minh giai cấp, tầng lớp ở Việt Nam</h2>
+      <p>Chương 5, mục III.1 và III.2. Giáo trình tr. 177–187, slide Tiết 20.</p>
+    </div>
+    <p class="note"><b>Phạm vi:</b> Nhóm 4 trình bày III.1 và III.2 (ghi “SV thuyết trình”). Tiết 19 (II. Liên minh giai cấp, tầng lớp nói chung) và Tiết 21 (III.2.b Phương hướng) không ghi “SV thuyết trình” nên nhiều khả năng do giảng viên giảng. Nhóm 4 có thể vẫn nhắc tới phương hướng.</p>
+
+    <div class="k">
+      <h4>III.1. Cơ cấu xã hội – giai cấp trong thời kỳ quá độ ở Việt Nam</h4>
+      <h5>Đặc điểm</h5>
+      <ul>
+        <li>Sự biến đổi vừa bảo đảm <b>tính quy luật phổ biến</b>, vừa mang <b>tính đặc thù</b> của xã hội Việt Nam.</li>
+        <li>Trong quá trình biến đổi, vị trí, vai trò của các giai cấp, tầng lớp ngày càng được khẳng định.</li>
+      </ul>
+      <h5>Sáu giai cấp, tầng lớp cơ bản</h5>
+      <div class="cmp tablewrap">
+        <table>
+          <thead><tr><th>Lực lượng</th><th>Vị trí, vai trò (theo slide)</th></tr></thead>
+          <tbody>
+            <tr><td><b>Giai cấp công nhân</b></td><td>Giai cấp lãnh đạo cách mạng thông qua Đảng Cộng sản; đại diện phương thức sản xuất tiên tiến; tiên phong xây dựng CNXH; lực lượng nòng cốt trong liên minh công – nông – trí</td></tr>
+            <tr><td><b>Giai cấp nông dân</b></td><td>Vị trí chiến lược trong công nghiệp hóa, hiện đại hóa nông nghiệp, nông thôn; giữ gìn bản sắc văn hóa, bảo vệ môi trường sinh thái; chủ thể xây dựng nông thôn mới</td></tr>
+            <tr><td><b>Đội ngũ trí thức</b></td><td>Lực lượng lao động sáng tạo đặc biệt quan trọng trong công nghiệp hóa, hiện đại hóa, hội nhập, kinh tế tri thức; là một lực lượng trong khối liên minh</td></tr>
+            <tr><td><b>Đội ngũ doanh nhân</b></td><td>Tầng lớp xã hội đặc biệt được Đảng chủ trương xây dựng vững mạnh; phát triển nhanh về số lượng, quy mô; đóng góp tích cực vào phát triển kinh tế – xã hội</td></tr>
+            <tr><td><b>Phụ nữ</b></td><td>Lực lượng quan trọng, đông đảo trong đội ngũ người lao động; vai trò trong mọi lĩnh vực xã hội và gia đình</td></tr>
+            <tr><td><b>Đội ngũ thanh niên</b></td><td>Rường cột của nước nhà, chủ nhân tương lai, lực lượng xung kích xây dựng và bảo vệ Tổ quốc (“tâm trong, trí sáng, hoài bão lớn”)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="k">
+      <h4>III.2.a. Nội dung liên minh giai cấp, tầng lớp ở Việt Nam</h4>
+      <div class="grid3">
+        <div class="mini"><b>Liên minh về kinh tế</b><span><b>Mục tiêu:</b> thỏa mãn nhu cầu, lợi ích kinh tế của các giai cấp, tầng lớp; xây dựng cơ sở vật chất – kỹ thuật cho CNXH. Là nội dung cơ bản, quyết định nhất.</span></div>
+        <div class="mini"><b>Liên minh về chính trị</b><span><b>Mục tiêu:</b> bảo vệ vững chắc chế độ chính trị, giữ vững độc lập dân tộc và định hướng đi lên CNXH.</span></div>
+        <div class="mini"><b>Liên minh về văn hóa – xã hội</b><span><b>Mục tiêu:</b> xây dựng nền văn hóa và con người Việt Nam phát triển toàn diện, hướng tới chân – thiện – mỹ, thấm nhuần tinh thần dân tộc, nhân văn, dân chủ, khoa học.</span></div>
+      </div>
+      <h5>Yêu cầu cụ thể</h5>
+      <div class="two">
+        <div>
+          <p><b>Kinh tế cần:</b></p>
+          <ol>
+            <li>Xác định đúng tiềm lực và nhu cầu kinh tế của từng giai cấp, tầng lớp.</li>
+            <li>Xác định cơ cấu kinh tế hợp lý.</li>
+            <li>Tổ chức các hình thức giao lưu, hợp tác phát triển kinh tế.</li>
+            <li>Nâng cao hiệu quả chuyển giao khoa học, kỹ thuật vào sản xuất công, nông nghiệp.</li>
+          </ol>
+        </div>
+        <div>
+          <p><b>Chính trị cần:</b></p>
+          <ol>
+            <li>Bảo đảm sự lãnh đạo của Đảng trong khối liên minh.</li>
+            <li>Hoàn thiện, phát huy dân chủ XHCN và quyền làm chủ của nhân dân.</li>
+            <li>Xây dựng Nhà nước pháp quyền XHCN.</li>
+            <li>Động viên nhân dân tham gia xây dựng, bảo vệ Đảng, Nhà nước và chế độ.</li>
+            <li>Chống mọi biểu hiện tiêu cực và âm mưu “diễn biến hòa bình”.</li>
+          </ol>
+        </div>
+      </div>
+      <p><b>Văn hóa – xã hội cần:</b> gắn tăng trưởng kinh tế với phát triển văn hóa, con người và tiến bộ, công bằng xã hội; thu hẹp phân hóa giàu nghèo; nâng cao chất lượng nguồn nhân lực; thực hiện tốt chính sách xã hội đối với các giai cấp, tầng lớp; chăm lo sức khỏe, an sinh xã hội, đẩy lùi tệ nạn xã hội.</p>
+    </div>
+  </div>
+
+  <div class="slot-sub" id="s7-cau-hoi">
+    <div class="head">
+      <span class="eyebrow">Slot 7 · Phản biện</span>
+      <h2>Câu hỏi phản biện Nhóm 4</h2>
+      <p>Mỗi thành viên hỏi một câu chính (C1–C5). Nếu Nhóm 4 đã trả lời trong bài thì dùng câu dự phòng (D1–D3). Thống nhất với Nhóm 6 trước để không hỏi trùng.</p>
+    </div>
+    <div class="qlist">
+      <article class="q">
+        <div class="qhead"><span class="qid">C1</span><span class="chip who">TV1</span><span class="chip">Lập luận</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Liên minh có 3 nội dung: kinh tế, chính trị, văn hóa – xã hội. Trong thời kỳ quá độ, nội dung nào là cơ bản, quyết định nhất? Nó khác gì so với thời kỳ đấu tranh giành chính quyền?</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra nhóm có thấy sự chuyển trọng tâm của liên minh qua hai thời kỳ.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Trong thời kỳ giành chính quyền, liên minh chủ yếu là <b>liên minh chính trị</b> để tập hợp lực lượng. Trong thời kỳ quá độ, <b>liên minh về kinh tế là nội dung cơ bản, quyết định nhất</b>, vì nó là cơ sở vật chất – kỹ thuật của liên minh và đáp ứng trực tiếp lợi ích của công nhân, nông dân, trí thức.</p>
+          <p>Liên minh chính trị giữ vai trò định hướng, liên minh văn hóa – xã hội là nền tảng tinh thần.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C2</span><span class="chip who">TV2</span><span class="chip">Tình huống</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Liên minh về kinh tế nhằm thỏa mãn lợi ích của các giai cấp, tầng lớp. Nhưng khi thu hồi đất nông nghiệp để làm khu công nghiệp, lợi ích của nông dân và của nhà đầu tư, công nhân lại mâu thuẫn. Liên minh xử lý mâu thuẫn này thế nào?</p>
+        <p class="why"><b>Mục đích:</b> đưa lý thuyết “lợi ích chung” vào một xung đột lợi ích có thật.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Cần nói rõ mâu thuẫn lợi ích là khách quan. Cách giải quyết là <b>hài hòa lợi ích</b>: bồi thường và tái định cư thỏa đáng, đào tạo, chuyển đổi nghề, ưu tiên tuyển lao động địa phương vào khu công nghiệp, công khai quy hoạch.</p>
+          <p>Điều này khớp với yêu cầu “xác định đúng nhu cầu kinh tế của từng giai cấp, tầng lớp” và “tổ chức các hình thức hợp tác phát triển kinh tế”.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C3</span><span class="chip who">TV3</span><span class="chip">Phân biệt</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Đội ngũ doanh nhân có phải là “giai cấp tư sản” không? Nếu có, tại sao Đảng lại chủ trương xây dựng đội ngũ này lớn mạnh? Doanh nhân có nằm trong khối liên minh không?</p>
+        <p class="why"><b>Mục đích:</b> chạm vào điểm dễ nhầm giữa lý luận cổ điển và chủ trương hiện nay.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Đảng xác định doanh nhân là <b>một tầng lớp xã hội đặc biệt</b>, không đồng nhất với giai cấp tư sản bóc lột theo nghĩa cổ điển, vì họ hoạt động trong nền kinh tế thị trường định hướng XHCN, theo pháp luật, và đóng góp cho phát triển.</p>
+          <p>Nghị quyết 41-NQ/TW (10/2023) đặt mục tiêu xây dựng đội ngũ doanh nhân lớn mạnh. Nòng cốt của liên minh vẫn là <b>công nhân – nông dân – trí thức</b>. Doanh nhân nằm trong khối đại đoàn kết toàn dân tộc và là chủ thể quan trọng của liên minh về kinh tế.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C4</span><span class="chip who">TV4</span><span class="chip">Lập luận</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Nhóm nói nông dân có vị trí chiến lược trong công nghiệp hóa nông nghiệp. Nhưng chính công nghiệp hóa lại làm số nông dân giảm mạnh. Vậy liên minh công – nông có bị suy yếu không?</p>
+        <p class="why"><b>Mục đích:</b> tìm điểm có vẻ mâu thuẫn để xem nhóm có lập luận biện chứng được không.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Không suy yếu. Số lượng nông dân giảm (tỷ lệ lao động nông nghiệp đã giảm từ khoảng 2/3 lực lượng lao động đầu những năm 2000 xuống dưới 30% hiện nay), nhưng <b>chất lượng</b> tăng: nông dân hiện đại, sản xuất hàng hóa, ứng dụng công nghệ. Một phần nông dân chuyển thành công nhân, nên hai giai cấp càng gắn bó hơn.</p>
+          <p>Liên minh chuyển từ dựa vào “số đông” sang dựa vào gắn kết chuỗi giá trị công – nông nghiệp – khoa học công nghệ.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">C5</span><span class="chip who">TV5</span><span class="chip">Phân biệt</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Liên minh công – nông – trí thức và “khối đại đoàn kết toàn dân tộc” khác nhau như thế nào? Mặt trận Tổ quốc Việt Nam đóng vai trò gì giữa hai khái niệm này?</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra quan hệ “nòng cốt – nền tảng – tổ chức”.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Liên minh công – nông – trí thức là <b>nền tảng, nòng cốt</b> của khối đại đoàn kết toàn dân tộc. Khối đại đoàn kết rộng hơn: gồm mọi giai cấp, tầng lớp, dân tộc, tôn giáo, người Việt Nam ở nước ngoài.</p>
+          <p>Mặt trận Tổ quốc là <b>tổ chức liên minh chính trị, liên hiệp tự nguyện</b>, nơi thể hiện và thực hiện khối đại đoàn kết đó dưới sự lãnh đạo của Đảng.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D1</span><span class="chip who backup">Dự phòng</span><span class="chip">Phân biệt</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Phụ nữ và thanh niên không phải là giai cấp, cũng không phải tầng lớp nghề nghiệp. Vì sao lại được đưa vào cơ cấu xã hội – giai cấp?</p>
+        <p class="why"><b>Mục đích:</b> kiểm tra nhóm có hiểu tiêu chí xếp loại trong danh sách 6 lực lượng.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Phụ nữ và thanh niên là <b>các nhóm xã hội</b> (theo giới, theo độ tuổi) đan xen trong mọi giai cấp, tầng lớp. Họ được nêu riêng vì là lực lượng lao động đông đảo, có vai trò đặc biệt và cần chính sách riêng (bình đẳng giới, giáo dục thế hệ trẻ). Đây là đặc thù khi Việt Nam vận dụng lý luận vào cơ cấu xã hội của mình.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D2</span><span class="chip who backup">Dự phòng</span><span class="chip">Liên hệ bản thân</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Sinh viên chúng ta thuộc thành phần nào trong 6 lực lượng nhóm vừa nêu? Sinh viên đã là “trí thức” chưa?</p>
+        <p class="why"><b>Mục đích:</b> câu hỏi gần gũi, dễ tạo tương tác với cả lớp.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Sinh viên thuộc <b>đội ngũ thanh niên</b> và là <b>nguồn bổ sung trực tiếp</b> cho đội ngũ trí thức. Trí thức là những người lao động trí óc có trình độ học vấn cao, chuyên môn sâu, tức là sinh viên chưa phải trí thức hoàn chỉnh.</p>
+          <p>Vai trò của sinh viên: học tập, nghiên cứu, khởi nghiệp sáng tạo, là lực lượng xung kích.</p>
+        </div></details>
+      </article>
+
+      <article class="q">
+        <div class="qhead"><span class="qid">D3</span><span class="chip who backup">Dự phòng</span><span class="chip">Thực tiễn</span><button class="copy" type="button">Sao chép</button></div>
+        <p class="text">Liên minh về chính trị có yêu cầu “chống âm mưu diễn biến hòa bình”. Trên không gian mạng hiện nay, điều này biểu hiện cụ thể ra sao và sinh viên có thể làm gì?</p>
+        <p class="why"><b>Mục đích:</b> đưa một cụm từ trong slide về đời sống mạng của sinh viên.</p>
+        <details><summary>Đáp án kỳ vọng</summary><div class="ans">
+          <p>Biểu hiện thường gặp: tin giả, xuyên tạc lịch sử, kích động chia rẽ dân tộc, tôn giáo, lợi dụng các vụ việc tiêu cực để bôi nhọ chế độ.</p>
+          <p>Sinh viên có thể kiểm chứng thông tin trước khi chia sẻ, không tiếp tay lan truyền, và chủ động lan tỏa thông tin tích cực, chính thống. Định hướng này nằm trong Nghị quyết 35-NQ/TW (2018) về bảo vệ nền tảng tư tưởng của Đảng.</p>
+        </div></details>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SLOT 8 ================= -->
+<section class="part slot-panel" id="slot-8" hidden>
+  <nav class="jump" aria-label="Nội dung Slot 8">
+    <a href="#phan-cong">Phân công</a>
+    <a href="#kien-thuc">Kiến thức</a>
+    <a href="#du-doan">Câu hỏi có thể bị hỏi</a>
+  </nav>
+
+  <div class="slot-sub" id="phan-cong">
+    <div class="head">
+      <span class="eyebrow">Slot 8 · Phân công</span>
+      <h2>Phân công 5 thành viên</h2>
+      <p>Nhóm 5 thuyết trình <b>II.1. Quan điểm của chủ nghĩa Mác – Lênin về tôn giáo</b> (Tiết 24, giáo trình tr. 214–222). Mỗi người phụ trách một phần nội dung (viết, làm slide, trình bày) và một việc chung. Thay TV1–TV5 bằng tên thật khi chia việc.</p>
+    </div>
+    <p class="note"><b>Phạm vi:</b> trong Slot 8 chỉ mục II.1 ghi “SV thuyết trình”. Tiết 22–23 (phần dân tộc) do giảng viên giảng, nhóm không phải trình bày.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Người</th><th>Phần nội dung thuyết trình</th><th>Việc chung của nhóm</th><th>Phản biện</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mem"><span class="mem-badge">TV1</span></td>
+            <td><b>Mở đầu + Bản chất của tôn giáo</b>
+              <span class="sub">Hình thái ý thức xã hội phản ánh hư ảo; thực thể xã hội; hiện tượng do con người sáng tạo; trích dẫn Ăngghen, Mác</span></td>
+            <td>Dẫn chương trình: giới thiệu nhóm, chuyển tiếp giữa các phần, điều phối phần hỏi đáp</td>
+            <td class="num">Slot 6: C1<br>Slot 7: C1</td>
+          </tr>
+          <tr>
+            <td class="mem"><span class="mem-badge">TV2</span></td>
+            <td><b>Phân biệt tôn giáo, tín ngưỡng, mê tín, mê tín dị đoan</b>
+              <span class="sub">Bảng so sánh, ví dụ Việt Nam (thờ cúng tổ tiên, thờ Mẫu, vàng mã, bùa phép)</span></td>
+            <td>Soạn minigame 5 câu trắc nghiệm cuối bài (Kahoot hoặc Quizizz)</td>
+            <td class="num">Slot 6: C2<br>Slot 7: C2</td>
+          </tr>
+          <tr>
+            <td class="mem"><span class="mem-badge">TV3</span></td>
+            <td><b>Nguồn gốc của tôn giáo</b>
+              <span class="sub">Tự nhiên, kinh tế – xã hội; nhận thức; tâm lý. Mỗi nguồn gốc một ví dụ</span></td>
+            <td>Làm template slide chung, nhận slide từng người và ghép thành bản hoàn chỉnh</td>
+            <td class="num">Slot 6: C3<br>Slot 7: C3</td>
+          </tr>
+          <tr>
+            <td class="mem"><span class="mem-badge">TV4</span></td>
+            <td><b>Tính chất của tôn giáo</b>
+              <span class="sub">Tính lịch sử, tính quần chúng, tính chính trị. Ví dụ tôn giáo bị lợi dụng</span></td>
+            <td>Tổng hợp bộ câu hỏi Nhóm 6, 7 có thể hỏi và đáp án, phân người trả lời</td>
+            <td class="num">Slot 6: C4<br>Slot 7: C4</td>
+          </tr>
+          <tr>
+            <td class="mem"><span class="mem-badge">TV5</span></td>
+            <td><b>Bốn nguyên tắc giải quyết vấn đề tôn giáo + Kết luận</b>
+              <span class="sub">Tự do tín ngưỡng; gắn với cải tạo xã hội; phân biệt hai mặt chính trị và tư tưởng; quan điểm lịch sử cụ thể</span></td>
+            <td>Viết slide kết luận, chuyển ý sang II.2 (giảng viên hoặc Nhóm 6)</td>
+            <td class="num">Slot 6: C5<br>Slot 7: C5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <h4>Mốc công việc</h4>
+        <ol class="steps">
+          <li><span class="t">Trước Slot 7</span><span>TV3 gửi template slide cho cả nhóm. Mọi người đọc giáo trình tr. 214–222.</span></li>
+          <li><span class="t">Trước Slot 8 ≥ 4 ngày</span><span>Mỗi người nộp slide phần mình theo template, kèm ghi chú lời nói (speaker notes).</span></li>
+          <li><span class="t">Trước Slot 8 ≥ 2 ngày</span><span>TV3 ghép slide hoàn chỉnh. TV4 gửi bộ câu hỏi dự đoán và phân người trả lời. TV2 gửi minigame.</span></li>
+          <li><span class="t">Trước Slot 8 1 ngày</span><span>Tập dượt toàn bài có bấm giờ, sửa lỗi chính tả và chuyển tiếp giữa các phần.</span></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h4>Quy ước chung</h4>
+        <ul class="rules">
+          <li>Thời lượng gợi ý: khoảng 4–5 phút mỗi người, 3–5 phút minigame. Điều chỉnh theo yêu cầu của giảng viên.</li>
+          <li>Mỗi phần có <b>ít nhất 1 ví dụ thực tế ở Việt Nam</b>, vì slide gốc của giảng viên hầu như chỉ có khung ý.</li>
+          <li>Trích dẫn kinh điển ghi rõ tác giả, tác phẩm ngay trên slide.</li>
+          <li>Mỗi người chuẩn bị trước 2 câu hỏi có thể bị hỏi về phần của mình.</li>
+          <li>Phần tôn giáo nhạy cảm: trình bày khách quan, không nhận xét tôn giáo nào hay hay dở.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="slot-sub" id="kien-thuc">
+    <div class="head">
+      <span class="eyebrow">Slot 8 · Kiến thức</span>
+      <h2>II.1. Quan điểm của chủ nghĩa Mác – Lênin về tôn giáo</h2>
+      <p>Chương 6: Vấn đề dân tộc và tôn giáo trong thời kỳ quá độ lên CNXH. Nội dung theo giáo trình CNXHKH 2021 (tr. 214–222) và slide Tiết 24, kèm ví dụ, gợi ý lời nói và gợi ý slide cho từng người.</p>
+    </div>
+
+    <div class="k">
+      <h4>Dàn ý tổng và thời lượng</h4>
+      <div class="cmp tablewrap">
+        <table>
+          <thead><tr><th>Thứ tự</th><th>Phần</th><th>Người</th><th>Thời lượng</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Mở đầu: đặt vấn đề, giới thiệu bố cục</td><td>TV1</td><td class="num">~1 phút</td></tr>
+            <tr><td class="num">2</td><td>1.1a. Bản chất của tôn giáo</td><td>TV1</td><td class="num">~4 phút</td></tr>
+            <tr><td class="num">3</td><td>Phân biệt tôn giáo, tín ngưỡng, mê tín, mê tín dị đoan</td><td>TV2</td><td class="num">~4 phút</td></tr>
+            <tr><td class="num">4</td><td>1.1b. Nguồn gốc của tôn giáo</td><td>TV3</td><td class="num">~5 phút</td></tr>
+            <tr><td class="num">5</td><td>1.1c. Tính chất của tôn giáo</td><td>TV4</td><td class="num">~4 phút</td></tr>
+            <tr><td class="num">6</td><td>1.2. Bốn nguyên tắc giải quyết vấn đề tôn giáo</td><td>TV5</td><td class="num">~6 phút</td></tr>
+            <tr><td class="num">7</td><td>Kết luận, liên hệ sinh viên</td><td>TV5</td><td class="num">~1 phút</td></tr>
+            <tr><td class="num">8</td><td>Minigame</td><td>TV2</td><td class="num">3–5 phút</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted-s">Tổng khoảng 25–30 phút. Đây là ước lượng, cần chỉnh lại theo thời gian giảng viên cho.</p>
+    </div>
+
+    <!-- MỞ ĐẦU -->
+    <div class="k">
+      <span class="owner">TV1</span>
+      <h4>Mở đầu</h4>
+      <ul>
+        <li><b>Câu hỏi mở với lớp:</b> “Ai trong lớp từng đi lễ chùa đầu năm, dự lễ Giáng sinh ở nhà thờ, hay thắp hương ông bà ngày giỗ?” Tôn giáo, tín ngưỡng rất gần gũi với đời sống mỗi người.</li>
+        <li><b>Số liệu dẫn vào:</b> theo Pew Research Center (2012), khoảng <b>84%</b> dân số thế giới gắn với một tôn giáo. Việt Nam có <b>16 tôn giáo</b> với <b>43 tổ chức tôn giáo</b> được Nhà nước công nhận, khoảng <b>27 triệu tín đồ</b> (Sách trắng “Tôn giáo và chính sách tôn giáo ở Việt Nam”, 2023).</li>
+        <li><b>Đặt vấn đề:</b> tôn giáo là gì, từ đâu mà có, vì sao tồn tại lâu dài như vậy, và trong thời kỳ quá độ lên CNXH thì phải ứng xử với tôn giáo thế nào?</li>
+        <li><b>Bố cục:</b> 1.1. Bản chất, nguồn gốc, tính chất của tôn giáo. 1.2. Nguyên tắc giải quyết vấn đề tôn giáo trong thời kỳ quá độ.</li>
+      </ul>
+    </div>
+
+    <!-- BẢN CHẤT -->
+    <div class="k">
+      <span class="owner">TV1</span>
+      <h4>1.1a. Bản chất của tôn giáo</h4>
+      <p>Chủ nghĩa Mác – Lênin nhìn tôn giáo dưới ba góc độ:</p>
+
+      <h5>Thứ nhất: tôn giáo là một hình thái ý thức xã hội</h5>
+      <p>Tôn giáo phản ánh một cách <b>hoang đường, hư ảo</b> hiện thực khách quan. Qua hình thức phản ánh đó, những sức mạnh tự phát trong tự nhiên và xã hội đều trở thành thần bí, siêu nhiên.</p>
+      <p><b>Ví dụ:</b> người xưa không giải thích được sấm sét nên tin có Thần Sấm (Lôi Công). Không giải thích được lũ lụt nên có truyện Sơn Tinh – Thủy Tinh. Không lý giải được sự sống và cái chết nên có quan niệm thiên đường, địa ngục, luân hồi.</p>
+      <div class="quote">“Tất cả mọi tôn giáo chẳng qua chỉ là sự phản ánh hư ảo vào trong đầu óc của con người, của những lực lượng ở bên ngoài chi phối cuộc sống hằng ngày của họ; chỉ là sự phản ánh trong đó những lực lượng ở trần thế đã mang hình thức những lực lượng siêu trần thế.”<cite>Ph. Ăngghen, Chống Đuyrinh</cite></div>
+
+      <h5>Thứ hai: tôn giáo là một thực thể xã hội, với 5 tiêu chí</h5>
+      <ol>
+        <li>Có niềm tin sâu sắc vào đấng siêu nhiên, đấng tối cao, thần thánh để tôn thờ.</li>
+        <li>Có hệ thống giáo thuyết (giáo lý, giáo luật, lễ nghi) phản ánh thế giới quan, nhân sinh quan, đạo đức của tôn giáo đó.</li>
+        <li>Có hệ thống cơ sở thờ tự.</li>
+        <li>Có tổ chức nhân sự, quản lý, điều hành việc đạo.</li>
+        <li>Có hệ thống tín đồ đông đảo, tự nguyện theo và được tôn giáo đó thừa nhận.</li>
+      </ol>
+      <div class="cmp tablewrap">
+        <table>
+          <thead><tr><th>Tiêu chí</th><th>Phật giáo</th><th>Công giáo</th></tr></thead>
+          <tbody>
+            <tr><td>Đối tượng tôn thờ</td><td>Đức Phật</td><td>Thiên Chúa</td></tr>
+            <tr><td>Giáo lý, giáo luật</td><td>Tam tạng kinh điển (Kinh, Luật, Luận)</td><td>Kinh Thánh, Giáo luật</td></tr>
+            <tr><td>Cơ sở thờ tự</td><td>Chùa, thiền viện</td><td>Nhà thờ, giáo đường</td></tr>
+            <tr><td>Tổ chức</td><td>Giáo hội Phật giáo Việt Nam</td><td>Giáo hoàng, giám mục, linh mục; Hội đồng Giám mục Việt Nam</td></tr>
+            <tr><td>Tín đồ</td><td>Phật tử</td><td>Giáo dân</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Luật Tín ngưỡng, tôn giáo 2016 (Điều 2) định nghĩa ngắn gọn: <i>“Tôn giáo là niềm tin của con người tồn tại với hệ thống quan niệm và hoạt động bao gồm đối tượng tôn thờ, giáo lý, giáo luật, lễ nghi và tổ chức.”</i></p>
+
+      <h5>Thứ ba: tôn giáo là hiện tượng xã hội – văn hóa do con người sáng tạo ra</h5>
+      <p>Con người sáng tạo ra tôn giáo vì mục đích, lợi ích của mình, để phản ánh ước mơ, nguyện vọng, suy nghĩ của mình. Nhưng sáng tạo ra rồi, con người lại <b>lệ thuộc vào tôn giáo</b>, tuyệt đối hóa và phục tùng tôn giáo vô điều kiện.</p>
+      <div class="quote">“Con người sáng tạo ra tôn giáo chứ tôn giáo không sáng tạo ra con người.”<cite>C. Mác, Góp phần phê phán triết học pháp quyền của Hêghen. Lời nói đầu</cite></div>
+      <div class="quote">“Tôn giáo là tiếng thở dài của chúng sinh bị áp bức, là trái tim của thế giới không có trái tim, cũng giống như nó là tinh thần của những trật tự không có tinh thần. Tôn giáo là thuốc phiện của nhân dân.”<cite>C. Mác, cùng tác phẩm. Thuốc phiện thời đó được dùng như thuốc giảm đau.</cite></div>
+
+      <h5>Kết luận về bản chất</h5>
+      <ul>
+        <li>Tôn giáo là sản phẩm của con người, gắn với những điều kiện lịch sử tự nhiên và xã hội xác định. Về bản chất, nó phản ánh <b>sự bế tắc, bất lực của con người trước tự nhiên và xã hội</b>.</li>
+        <li>Tuy vậy, tôn giáo cũng chứa đựng nhiều <b>giá trị phù hợp với đạo đức, đạo lý</b> của xã hội: hướng thiện, từ bi, bác ái, khuyên con người sống tốt.</li>
+        <li>Về thế giới quan, tôn giáo mang thế giới quan <b>duy tâm</b>, khác với thế giới quan duy vật biện chứng của chủ nghĩa Mác – Lênin.</li>
+        <li>Dù khác nhau về thế giới quan, người cộng sản <b>không bao giờ xem thường hay trấn áp</b> nhu cầu tín ngưỡng, tôn giáo của nhân dân. Họ tôn trọng quyền tự do tín ngưỡng và không tín ngưỡng. Trong điều kiện cụ thể, người cộng sản và người có đạo có thể hợp tác để cải tạo hiện thực, xây dựng xã hội mới.</li>
+      </ul>
+
+      <div class="say"><b>Gợi ý lời nói:</b> “Nói ngắn gọn, chủ nghĩa Mác – Lênin coi tôn giáo vừa là một cách con người nhìn thế giới, vừa là một tổ chức xã hội có thật, vừa là sản phẩm văn hóa do chính con người tạo ra. Câu của Mác ‘thuốc phiện của nhân dân’ thường bị hiểu là chê bai tôn giáo. Nhưng thời đó thuốc phiện là thuốc giảm đau, nên ý Mác là tôn giáo xoa dịu nỗi đau của con người, chứ không chữa được nguyên nhân gây đau là xã hội áp bức.”</div>
+      <p class="slide-idea"><b>Gợi ý slide:</b> 3 ô ngang cho 3 góc độ, mỗi ô một biểu tượng (bộ não, tòa nhà, bàn tay). Một slide riêng cho bảng đối chiếu Phật giáo và Công giáo. Một slide trích dẫn Mác chữ lớn.</p>
+    </div>
+
+    <!-- PHÂN BIỆT -->
+    <div class="k">
+      <span class="owner">TV2</span>
+      <h4>Phân biệt tôn giáo, tín ngưỡng, mê tín, mê tín dị đoan</h4>
+      <h5>Định nghĩa</h5>
+      <ul>
+        <li><b>Tín ngưỡng</b> là niềm tin của con người vào cái thiêng liêng, cao cả, siêu nhiên mà con người tôn sùng, gắn với các hình thức sinh hoạt văn hóa, cộng đồng. Theo Luật Tín ngưỡng, tôn giáo 2016: <i>“Tín ngưỡng là niềm tin của con người được thể hiện thông qua những lễ nghi gắn liền với phong tục, tập quán truyền thống để mang lại sự bình an về tinh thần cho cá nhân và cộng đồng.”</i></li>
+        <li><b>Mê tín</b> là niềm tin mê muội, viển vông, không dựa trên một cơ sở khoa học nào.</li>
+        <li><b>Mê tín dị đoan</b> là mê tín đến mức mê muội, cuồng tín, dẫn đến hành vi cực đoan, sai lệch quá mức, trái với giá trị văn hóa, đạo đức, pháp luật, gây tổn hại cho cá nhân, gia đình và xã hội.</li>
+      </ul>
+      <h5>So sánh</h5>
+      <div class="cmp tablewrap">
+        <table>
+          <thead><tr><th>Tiêu chí</th><th>Tôn giáo</th><th>Tín ngưỡng</th><th>Mê tín dị đoan</th></tr></thead>
+          <tbody>
+            <tr><td><b>Niềm tin</b></td><td>Vào đấng tối cao, siêu nhiên</td><td>Vào cái thiêng liêng (tổ tiên, thần linh, anh hùng)</td><td>Mê muội, cuồng tín</td></tr>
+            <tr><td><b>Giáo lý, giáo luật</b></td><td>Có, thành hệ thống</td><td>Không có hoặc rất sơ khai</td><td>Không có</td></tr>
+            <tr><td><b>Tổ chức</b></td><td>Giáo hội chặt chẽ</td><td>Theo cộng đồng (gia đình, làng, dòng họ)</td><td>Cá nhân hành nghề</td></tr>
+            <tr><td><b>Tác động</b></td><td>Đáp ứng nhu cầu tinh thần, có giá trị đạo đức</td><td>Gắn kết cộng đồng, giữ truyền thống</td><td>Gây hại sức khỏe, tiền bạc, có thể vi phạm pháp luật</td></tr>
+            <tr><td><b>Thái độ Nhà nước</b></td><td>Tôn trọng, bảo hộ</td><td>Tôn trọng, bảo hộ</td><td>Bài trừ; hành nghề mê tín dị đoan có thể bị xử lý hình sự (Điều 320 Bộ luật Hình sự 2015)</td></tr>
+            <tr><td><b>Ví dụ</b></td><td>Phật giáo, Công giáo, Tin Lành, Hồi giáo, Cao Đài, Hòa Hảo</td><td>Thờ cúng tổ tiên, thờ Mẫu Tam phủ (UNESCO ghi danh 2016), thờ Hùng Vương, thờ Thành hoàng làng</td><td>Chữa bệnh bằng bùa phép thay vì đi viện; “trục vong”, “giải hạn” thu tiền</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h5>Ranh giới</h5>
+      <p>Tôn giáo và tín ngưỡng <b>không đồng nhất nhưng có giao thoa</b>: cả hai đều là niềm tin vào cái thiêng liêng; khác nhau ở mức độ tổ chức và hệ thống giáo lý. Tín ngưỡng chuyển thành mê tín khi niềm tin trở nên mê muội. Mê tín thành mê tín dị đoan khi gây hậu quả xấu.</p>
+      <p><b>Ví dụ cùng một hoạt động:</b> hầu đồng trong tín ngưỡng thờ Mẫu là thực hành văn hóa được UNESCO ghi danh. Nhưng lợi dụng “lên đồng” để chữa bệnh, phán bệnh, thu tiền thì là mê tín dị đoan.</p>
+      <div class="say"><b>Gợi ý lời nói:</b> “Thắp hương ông bà là tín ngưỡng, thể hiện đạo lý uống nước nhớ nguồn. Đi chùa lễ Phật, theo giáo lý nhà Phật là tôn giáo. Còn bỏ thuốc để uống nước bùa, hay tốn hàng chục triệu để giải hạn thì đã là mê tín dị đoan. Điểm phân biệt nằm ở mức độ mê muội và hậu quả nó gây ra.”</div>
+      <p class="slide-idea"><b>Gợi ý slide:</b> bảng so sánh 3 cột. Thêm một slide “Đúng hay sai?” đưa 3–4 tình huống cho cả lớp đoán là tín ngưỡng hay mê tín.</p>
+    </div>
+
+    <!-- NGUỒN GỐC -->
+    <div class="k">
+      <span class="owner">TV3</span>
+      <h4>1.1b. Nguồn gốc của tôn giáo</h4>
+
+      <h5>1. Nguồn gốc kinh tế – xã hội (gồm cả nguồn gốc tự nhiên)</h5>
+      <ul>
+        <li><b>Trong xã hội nguyên thủy:</b> lực lượng sản xuất chưa phát triển, con người yếu đuối, bất lực trước thiên nhiên hùng vĩ và không giải thích được nó. Vì vậy con người gán cho tự nhiên những sức mạnh thần thánh rồi thờ cúng. Ví dụ: cư dân lúa nước thờ thần Mặt Trời, thần Mưa, thần Sông, thần Lúa.</li>
+        <li><b>Khi xã hội có giai cấp đối kháng:</b> con người không giải thích được nguồn gốc của áp bức, bóc lột, bất công, lại lo sợ trước sự thống trị của các lực lượng xã hội. Họ trông chờ được giải phóng bởi một lực lượng siêu nhiên, hoặc một cuộc sống tốt đẹp hơn ở “thế giới bên kia”.</li>
+      </ul>
+      <div class="quote">“Sự bất lực của giai cấp bị bóc lột trong cuộc đấu tranh chống bọn bóc lột tất nhiên đẻ ra lòng tin vào một cuộc đời tốt đẹp hơn ở thế giới bên kia, cũng giống y như sự bất lực của người dã man trong cuộc đấu tranh chống thiên nhiên đẻ ra lòng tin vào thần thánh, ma quỷ, vào những phép màu.”<cite>V.I. Lênin, Chủ nghĩa xã hội và tôn giáo (1905)</cite></div>
+
+      <h5>2. Nguồn gốc nhận thức</h5>
+      <ul>
+        <li>Ở mỗi giai đoạn lịch sử, nhận thức của con người về tự nhiên, xã hội và bản thân <b>có giới hạn</b>. Khoảng cách giữa “biết” và “chưa biết” luôn tồn tại. Điều gì khoa học chưa giải thích được thì dễ bị tôn giáo giải thích thay.</li>
+        <li>Mặt khác, quá trình nhận thức có thể bị xuyên tạc: con người <b>tuyệt đối hóa, cường điệu mặt chủ thể</b> của nhận thức, biến cái khách quan thành cái siêu nhiên, thần thánh.</li>
+        <li><b>Ví dụ:</b> dân gian từng giải thích nguyệt thực là “gấu ăn trăng” và gõ mõ, khua chiêng để đuổi gấu. Ở châu Âu thời trung cổ, dịch bệnh bị coi là “Chúa trừng phạt”. Khi khoa học giải thích được thì niềm tin đó dần mất đi.</li>
+      </ul>
+
+      <h5>3. Nguồn gốc tâm lý</h5>
+      <ul>
+        <li><b>Cảm xúc tiêu cực:</b> sự sợ hãi, lo lắng trước sức mạnh tự phát của tự nhiên và xã hội, khi ốm đau, bệnh tật, gặp rủi ro bất ngờ, hoặc mong được bình yên trước một việc lớn (thi cử, cưới hỏi, làm nhà, đi xa). Các nhà duy vật cổ đại có câu: <i>“Sự sợ hãi sinh ra thần thánh.”</i></li>
+        <li><b>Cảm xúc tích cực:</b> lòng biết ơn, kính trọng đối với người có công với nước, với dân cũng dẫn con người đến thờ phụng. Ví dụ: thờ Hùng Vương, Hai Bà Trưng, Đức Thánh Trần (Trần Hưng Đạo), Chủ tịch Hồ Chí Minh.</li>
+        <li><b>Ví dụ gần với sinh viên:</b> đi lễ, xin chữ trước kỳ thi để yên tâm hơn chính là biểu hiện của nguồn gốc tâm lý.</li>
+      </ul>
+      <div class="remember"><b>Ghi nhớ:</b> ba nguồn gốc đan xen, tác động lẫn nhau, trong đó nguồn gốc kinh tế – xã hội là cơ bản. Chừng nào những nguồn gốc này còn thì tôn giáo còn tồn tại. Đây là cơ sở để hiểu tính lịch sử của tôn giáo và nguyên tắc 2 ở phần sau.</div>
+      <div class="say"><b>Gợi ý lời nói:</b> “Có ba lý do khiến con người tìm đến tôn giáo: vì bất lực trước tự nhiên và xã hội, vì có những điều chưa hiểu được, và vì sợ hãi hoặc biết ơn. Ngay cả trong phòng thi hôm nay, nhiều bạn vẫn đi xin chữ hay mang theo bùa may mắn. Đó chính là nguồn gốc tâm lý mà giáo trình nói tới.”</div>
+      <p class="slide-idea"><b>Gợi ý slide:</b> sơ đồ 3 nhánh (kinh tế – xã hội, nhận thức, tâm lý), mỗi nhánh một hình minh họa: người nguyên thủy trước thiên tai, nguyệt thực, sinh viên xin chữ.</p>
+    </div>
+
+    <!-- TÍNH CHẤT -->
+    <div class="k">
+      <span class="owner">TV4</span>
+      <h4>1.1c. Tính chất của tôn giáo</h4>
+
+      <h5>1. Tính lịch sử</h5>
+      <ul>
+        <li>Tôn giáo chỉ xuất hiện khi khả năng <b>tư duy trừu tượng</b> của con người đạt tới một mức nhất định. Nó là một phạm trù lịch sử, là sản phẩm của lịch sử.</li>
+        <li>Trong từng giai đoạn, tôn giáo <b>biến đổi</b> cho phù hợp với kết cấu chính trị, xã hội của thời đại. Ví dụ: Công đồng Vatican II (1962–1965) cho phép cử hành thánh lễ bằng tiếng bản xứ thay cho tiếng Latinh; nhiều chùa, nhà thờ ngày nay livestream nghi lễ.</li>
+        <li>Đến khi con người nhận thức được bản chất của tự nhiên, xã hội, làm chủ được tự nhiên, xã hội và bản thân, thì tôn giáo sẽ không còn. Nhưng đó là một quá trình <b>rất lâu dài</b>.</li>
+      </ul>
+
+      <h5>2. Tính quần chúng</h5>
+      <ul>
+        <li>Tôn giáo là nơi <b>sinh hoạt văn hóa, tinh thần</b> của một bộ phận đông đảo quần chúng lao động. Số tín đồ chiếm tỷ lệ cao trong dân số thế giới (khoảng 84%).</li>
+        <li>Dù phản ánh hạnh phúc hư ảo, tôn giáo vẫn phản ánh <b>khát vọng</b> của người bị áp bức về một xã hội tự do, bình đẳng, bác ái.</li>
+        <li>Nhiều tôn giáo có tính <b>nhân văn, nhân đạo, hướng thiện</b>, nên được nhiều tầng lớp tin theo. Ví dụ: các hoạt động từ thiện, phát cơm miễn phí, hỗ trợ người bệnh của chùa và giáo xứ; đóng góp của các tổ chức tôn giáo trong mùa dịch Covid-19.</li>
+      </ul>
+
+      <h5>3. Tính chính trị</h5>
+      <ul>
+        <li>Chỉ xuất hiện khi xã hội đã <b>phân chia giai cấp</b>, có đối kháng về lợi ích. Trong xã hội nguyên thủy, tôn giáo thuần túy là tư tưởng.</li>
+        <li>Giai cấp thống trị <b>lợi dụng</b> tôn giáo để bảo vệ quyền lực. Ví dụ: thuyết “quân quyền thần thụ” (quyền vua do thần ban) ở châu Âu trung cổ; quan niệm vua là “Thiên tử” (con trời) ở phương Đông.</li>
+        <li>Trong nội bộ các tôn giáo cũng có phân hóa, đấu tranh. Trong cuộc đấu tranh ý thức hệ, tôn giáo thường là một bộ phận của đấu tranh giai cấp.</li>
+        <li>Ngày nay tôn giáo phát triển đa dạng, phức tạp cả ở phạm vi quốc gia và quốc tế. Nhiều tổ chức tôn giáo quốc tế có thế lực lớn, tác động đến chính trị. Các nhóm cực đoan nhân danh tôn giáo để tiến hành khủng bố.</li>
+      </ul>
+      <div class="remember"><b>Câu chốt của giáo trình:</b> đa số quần chúng đến với tôn giáo để thỏa mãn nhu cầu tinh thần. Nhưng trên thực tế, tôn giáo đã và đang bị các thế lực chính trị – xã hội lợi dụng để thực hiện mục đích ngoài tôn giáo. Phải phân biệt tín đồ với kẻ lợi dụng tôn giáo.</div>
+      <div class="say"><b>Gợi ý lời nói:</b> “Ba tính chất trả lời ba câu hỏi. Tôn giáo có mãi không? Không, nó có lịch sử ra đời, biến đổi và sẽ mất đi, nhưng rất lâu dài. Vì sao nhiều người theo? Vì nó đáp ứng nhu cầu tinh thần và có giá trị hướng thiện. Vì sao phải cảnh giác? Vì tôn giáo có thể bị lợi dụng cho mục đích chính trị.”</div>
+      <p class="slide-idea"><b>Gợi ý slide:</b> 3 cột tính chất, mỗi cột một câu hỏi lớn ở trên (Có mãi không? Vì sao nhiều người theo? Vì sao phải cảnh giác?) và ví dụ ở dưới.</p>
+    </div>
+
+    <!-- NGUYÊN TẮC -->
+    <div class="k">
+      <span class="owner">TV5</span>
+      <h4>1.2. Bốn nguyên tắc giải quyết vấn đề tôn giáo trong thời kỳ quá độ</h4>
+      <p>Tín ngưỡng, tôn giáo là vấn đề <b>nhạy cảm và phức tạp</b>, nên phải giải quyết hết sức thận trọng, cụ thể, chính xác, vừa có nguyên tắc vừa linh hoạt.</p>
+
+      <h5>Nguyên tắc 1. Tôn trọng, bảo đảm quyền tự do tín ngưỡng và không tín ngưỡng của nhân dân</h5>
+      <ul>
+        <li>Tín ngưỡng, tôn giáo thuộc lĩnh vực ý thức, tư tưởng. Vì vậy tự do tín ngưỡng và không tín ngưỡng là một phần của <b>quyền tự do tư tưởng</b>.</li>
+        <li>Theo đạo, đổi đạo hay không theo đạo là quyền lựa chọn của mỗi người. Không cá nhân, tổ chức nào, kể cả chức sắc tôn giáo, được can thiệp. Mọi hành vi cấm đoán, hoặc ép buộc người khác theo đạo, đều xâm phạm quyền này.</li>
+        <li>Nhà nước tôn trọng và bảo hộ các hoạt động tôn giáo bình thường, cơ sở thờ tự, phương tiện phục vụ sinh hoạt tôn giáo. Công dân có đạo hay không có đạo đều <b>bình đẳng trước pháp luật</b>.</li>
+        <li>Đồng thời nghiêm cấm mọi hành vi lợi dụng tôn giáo để vi phạm pháp luật, chống phá chế độ.</li>
+      </ul>
+      <div class="quote">“Mọi người có quyền tự do tín ngưỡng, tôn giáo, theo hoặc không theo một tôn giáo nào. Các tôn giáo bình đẳng trước pháp luật… Không ai được xâm phạm tự do tín ngưỡng, tôn giáo hoặc lợi dụng tín ngưỡng, tôn giáo để vi phạm pháp luật.”<cite>Điều 24, Hiến pháp 2013</cite></div>
+
+      <h5>Nguyên tắc 2. Khắc phục dần ảnh hưởng tiêu cực của tôn giáo phải gắn liền với quá trình cải tạo xã hội cũ, xây dựng xã hội mới</h5>
+      <ul>
+        <li>Muốn thay đổi ý thức xã hội thì trước hết phải thay đổi <b>tồn tại xã hội</b>. Muốn xóa bỏ ảo tưởng thì phải xóa bỏ nguồn gốc sinh ra ảo tưởng đó.</li>
+        <li>Phải xây dựng một xã hội hiện thực không còn áp bức, bất công, nghèo đói, thất học. Đây là quá trình lâu dài, không tách rời việc cải tạo xã hội cũ, xây dựng xã hội mới.</li>
+        <li><b>Không dùng mệnh lệnh hành chính, cưỡng chế</b> để xóa bỏ tôn giáo. Làm vậy chỉ gây phản ứng ngược và vi phạm quyền con người.</li>
+        <li><b>Ví dụ:</b> khi đưa trạm y tế, trường học, điện lưới về vùng sâu vùng xa, tình trạng cúng bái chữa bệnh tự giảm. Đó là khắc phục tiêu cực bằng cách thay đổi đời sống chứ không bằng cấm đoán.</li>
+      </ul>
+      <div class="quote">“Việc xóa bỏ tôn giáo, với tính cách là hạnh phúc ảo tưởng của nhân dân, là yêu cầu thực hiện hạnh phúc thực sự của nhân dân.”<cite>C. Mác, Góp phần phê phán triết học pháp quyền của Hêghen. Lời nói đầu</cite></div>
+
+      <h5>Nguyên tắc 3. Phân biệt hai mặt chính trị và tư tưởng; phân biệt tín ngưỡng, tôn giáo với lợi dụng tín ngưỡng, tôn giáo</h5>
+      <div class="cmp tablewrap">
+        <table>
+          <thead><tr><th></th><th>Mặt tư tưởng</th><th>Mặt chính trị</th></tr></thead>
+          <tbody>
+            <tr><td><b>Là gì</b></td><td>Niềm tin tín ngưỡng của quần chúng; khác biệt về niềm tin giữa người có đạo và không có đạo, giữa các tôn giáo</td><td>Sự lợi dụng tôn giáo của các phần tử phản động để chống lại sự nghiệp cách mạng, xây dựng CNXH</td></tr>
+            <tr><td><b>Loại mâu thuẫn</b></td><td><b>Không đối kháng</b></td><td><b>Đối kháng</b></td></tr>
+            <tr><td><b>Cách giải quyết</b></td><td>Tôn trọng; khắc phục dần, thường xuyên, lâu dài bằng giáo dục, nâng cao đời sống</td><td>Đấu tranh thường xuyên, kiên quyết, nhưng thận trọng, có sách lược phù hợp</td></tr>
+            <tr><td><b>Ví dụ</b></td><td>Người dân đi lễ chùa, đi lễ nhà thờ, cầu nguyện</td><td>Nhân danh tôn giáo tụ tập gây rối, tuyên truyền chống chính quyền, kích động chia rẽ</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Phân biệt hai mặt này để <b>tránh hai khuynh hướng cực đoan</b>: hoặc coi mọi người có đạo là đối tượng nghi ngờ, hoặc buông lỏng trước kẻ lợi dụng tôn giáo.</p>
+
+      <h5>Nguyên tắc 4. Quan điểm lịch sử cụ thể trong giải quyết vấn đề tín ngưỡng, tôn giáo</h5>
+      <ul>
+        <li>Tôn giáo không bất biến mà luôn vận động theo điều kiện kinh tế – xã hội – lịch sử cụ thể. Ở mỗi thời kỳ, vai trò và tác động của từng tôn giáo khác nhau. Quan điểm của các giáo hội, chức sắc về đời sống xã hội cũng khác nhau.</li>
+        <li>Vì vậy phải xem xét, đánh giá, ứng xử với từng tôn giáo, từng thời điểm cụ thể. Lênin nhắc người mácxít phải <i>“chú ý đến toàn bộ tình hình cụ thể”</i>.</li>
+        <li><b>Ví dụ Việt Nam:</b> Phật giáo thời Lý – Trần gắn bó với dân tộc (vua Trần Nhân Tông lập Thiền phái Trúc Lâm). Ngày nay Giáo hội Phật giáo Việt Nam (thành lập 1981) theo phương châm “Đạo pháp – Dân tộc – Chủ nghĩa xã hội”. Hội đồng Giám mục Việt Nam trong Thư chung năm 1980 nêu đường hướng “Sống Phúc Âm giữa lòng dân tộc để phục vụ hạnh phúc của đồng bào”.</li>
+      </ul>
+      <div class="say"><b>Gợi ý lời nói:</b> “Bốn nguyên tắc có thể nhớ bằng bốn từ khóa: tôn trọng, gắn với xây dựng xã hội mới, phân biệt, cụ thể. Tôn trọng quyền tự do tín ngưỡng của mọi người. Không cấm đoán mà thay đổi đời sống để tiêu cực tự mất đi. Phân biệt người có đạo với kẻ lợi dụng đạo. Và xét từng tôn giáo trong từng hoàn cảnh cụ thể.”</div>
+      <p class="slide-idea"><b>Gợi ý slide:</b> mỗi nguyên tắc một slide, tiêu đề là từ khóa (Tôn trọng, Gắn kết, Phân biệt, Cụ thể). Nguyên tắc 3 dùng bảng hai cột tư tưởng và chính trị.</p>
+    </div>
+
+    <!-- KẾT LUẬN -->
+    <div class="k">
+      <span class="owner">TV5</span>
+      <h4>Kết luận</h4>
+      <ul>
+        <li>Tôn giáo là một hiện tượng xã hội có <b>nguồn gốc khách quan</b> (kinh tế – xã hội, nhận thức, tâm lý), mang tính lịch sử, quần chúng và chính trị. Nó sẽ còn tồn tại lâu dài.</li>
+        <li>Chủ nghĩa Mác – Lênin đối lập với tôn giáo về thế giới quan nhưng chủ trương <b>tôn trọng tự do tín ngưỡng</b>, đoàn kết đồng bào có đạo và không có đạo cùng xây dựng xã hội mới.</li>
+        <li><b>Liên hệ sinh viên:</b> tôn trọng niềm tin của người khác; tỉnh táo trước mê tín dị đoan và các thông tin lợi dụng tôn giáo trên mạng xã hội; không chia sẻ nội dung xúc phạm tôn giáo.</li>
+        <li><b>Chuyển ý:</b> những nguyên tắc này được Đảng, Nhà nước vận dụng thế nào ở Việt Nam sẽ được trình bày tiếp ở mục II.2.</li>
+      </ul>
+    </div>
+
+    <!-- MINIGAME -->
+    <div class="k">
+      <span class="owner">TV2</span>
+      <h4>Minigame mẫu (5 câu)</h4>
+      <ol class="quiz">
+        <li><b>Theo chủ nghĩa Mác – Lênin, tôn giáo là:</b>
+          <span>A. Hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan · B. Một khoa học về thế giới siêu nhiên · C. Một loại hình nghệ thuật dân gian · D. Một thiết chế nhà nước</span></li>
+        <li><b>Yếu tố nào KHÔNG phải tiêu chí của một tôn giáo?</b>
+          <span>A. Giáo lý, giáo luật · B. Cơ sở thờ tự · C. Có nhà nước riêng · D. Tín đồ đông đảo</span></li>
+        <li><b>Câu “Sự sợ hãi sinh ra thần thánh” thể hiện nguồn gốc nào của tôn giáo?</b>
+          <span>A. Kinh tế – xã hội · B. Nhận thức · C. Tâm lý · D. Chính trị</span></li>
+        <li><b>Tính chính trị của tôn giáo xuất hiện khi nào?</b>
+          <span>A. Ngay từ khi tôn giáo ra đời · B. Khi xã hội phân chia giai cấp · C. Khi có nhà nước XHCN · D. Khi có Internet</span></li>
+        <li><b>Mặt chính trị trong vấn đề tôn giáo phản ánh loại mâu thuẫn nào?</b>
+          <span>A. Không đối kháng · B. Đối kháng · C. Mâu thuẫn nội bộ tín đồ · D. Không có mâu thuẫn</span></li>
+      </ol>
+      <details><summary>Đáp án</summary><div class="ans"><p>1A · 2C · 3C · 4B · 5B</p></div></details>
+    </div>
+  </div>
+
+  <div class="slot-sub" id="du-doan">
+    <div class="head">
+      <span class="eyebrow">Slot 8 · Hỏi đáp</span>
+      <h2>Câu hỏi Nhóm 6, 7 có thể hỏi</h2>
+      <p>TV4 hoàn thiện danh sách này. Người phụ trách phần nào trả lời câu hỏi phần đó, TV1 điều phối.</p>
+    </div>
+    <div class="qlist answer-list">
+      <article class="q">
+        <div class="qhead"><span class="qid">H1</span><span class="chip who ours">TV1 trả lời</span></div>
+        <p class="text">Mác gọi tôn giáo là “thuốc phiện của nhân dân”. Như vậy chủ nghĩa Mác – Lênin coi tôn giáo hoàn toàn tiêu cực?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Không. Câu đầy đủ là: “Tôn giáo là tiếng thở dài của chúng sinh bị áp bức, là trái tim của thế giới không có trái tim… Tôn giáo là thuốc phiện của nhân dân.” Thời Mác, thuốc phiện được dùng như <b>thuốc giảm đau</b>. Câu này phê phán xã hội áp bức đã sinh ra nhu cầu tìm an ủi ở tôn giáo. Nó cũng thừa nhận tôn giáo xoa dịu nỗi đau, dù không giải quyết được nguyên nhân.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H2</span><span class="chip who ours">TV1 trả lời</span></div>
+        <p class="text">Nếu tôn giáo chỉ là “phản ánh hư ảo”, thì tôn giáo có giá trị tích cực nào không?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Có. “Hư ảo” là nói về cách phản ánh thế giới (thế giới quan), không phủ nhận các giá trị khác. Tôn giáo có giá trị <b>đạo đức</b> (hướng thiện, từ bi, bác ái), <b>văn hóa, nghệ thuật</b> (kiến trúc chùa chiền, nhà thờ, lễ hội), và giúp gắn kết cộng đồng. Đảng, Nhà nước chủ trương phát huy giá trị văn hóa, đạo đức tốt đẹp của các tôn giáo.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H3</span><span class="chip who ours">TV2 trả lời</span></div>
+        <p class="text">Thờ cúng tổ tiên là tín ngưỡng hay mê tín? Đốt vàng mã thì sao?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Thờ cúng tổ tiên là <b>tín ngưỡng</b>, thể hiện đạo lý “uống nước nhớ nguồn”, cần được tôn trọng. Đốt vàng mã ở mức vừa phải là tập quán. Khi đốt tràn lan, tốn kém, tin rằng càng đốt nhiều càng được phù hộ thì đã chuyển sang <b>mê tín</b>, cần vận động hạn chế. Ranh giới nằm ở mức độ mê muội và hậu quả gây ra.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H4</span><span class="chip who ours">TV2 trả lời</span></div>
+        <p class="text">Đạo Mẫu là tín ngưỡng hay tôn giáo? Dựa vào tiêu chí nào để phân biệt?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Là <b>tín ngưỡng</b>: “Thực hành Tín ngưỡng thờ Mẫu Tam phủ của người Việt” được UNESCO ghi danh năm 2016. Tiêu chí phân biệt: tôn giáo có <b>hệ thống giáo lý, giáo luật thành văn và tổ chức giáo hội</b>; thờ Mẫu có nghi lễ (hầu đồng) và cơ sở thờ tự nhưng không có giáo lý hệ thống hay giáo hội thống nhất.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H5</span><span class="chip who ours">TV3 trả lời</span></div>
+        <p class="text">Nếu tôn giáo sinh ra từ áp bức và sự bất lực của con người, sao ở những nước giàu, khoa học phát triển như Mỹ tôn giáo vẫn rất phổ biến?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Vì tôn giáo có <b>ba nguồn gốc</b>, không chỉ kinh tế – xã hội. Khoa học dù phát triển vẫn chưa giải thích hết mọi thứ (nguồn gốc nhận thức). Con người vẫn lo âu trước rủi ro, bệnh tật, cái chết (nguồn gốc tâm lý). Xã hội tư bản vẫn còn bất bình đẳng, khủng hoảng. Ngoài ra tôn giáo còn là truyền thống văn hóa, sinh hoạt cộng đồng (tính quần chúng).</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H6</span><span class="chip who ours">TV4 trả lời</span></div>
+        <p class="text">Tính chính trị của tôn giáo thể hiện cụ thể thế nào? Cho ví dụ tôn giáo bị lợi dụng.</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Tính chính trị xuất hiện khi xã hội có giai cấp: giai cấp thống trị dùng tôn giáo để củng cố quyền lực (thuyết “thần quyền”, “vua là con trời”). Ví dụ lịch sử: thực dân dùng hoạt động truyền giáo hỗ trợ xâm lược thuộc địa. Hiện nay: các tổ chức cực đoan nhân danh tôn giáo để khủng bố, hoặc lợi dụng tôn giáo kích động ly khai, chia rẽ. Cần phân biệt rõ: lỗi ở <b>kẻ lợi dụng</b>, không phải ở tín đồ.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H7</span><span class="chip who ours">TV5 trả lời</span></div>
+        <p class="text">Cho ví dụ cụ thể phân biệt “mặt tư tưởng” và “mặt chính trị” trong vấn đề tôn giáo.</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p><b>Mặt tư tưởng:</b> người dân đi lễ chùa, đi nhà thờ, cầu nguyện. Đây là nhu cầu tinh thần chính đáng, được tôn trọng và bảo vệ. <b>Mặt chính trị:</b> một nhóm nhân danh tôn giáo tụ tập gây rối, tuyên truyền chống chính quyền, kích động chia rẽ. Hành vi này phải xử lý theo pháp luật. Xử lý mặt chính trị không được làm tổn hại tới quyền tự do tín ngưỡng của quần chúng.</p></div></details>
+      </article>
+      <article class="q">
+        <div class="qhead"><span class="qid">H8</span><span class="chip who ours">TV5 trả lời</span></div>
+        <p class="text">Nếu tôn giáo có “tính lịch sử” và sẽ mất đi, tại sao Nhà nước không chủ động hạn chế tôn giáo mà lại bảo đảm quyền tự do tín ngưỡng?</p>
+        <details><summary>Gợi ý trả lời</summary><div class="ans"><p>Tôn giáo chỉ mất đi khi những điều kiện kinh tế – xã hội và nhận thức sinh ra nó mất đi, và đó là một quá trình rất lâu dài. Dùng biện pháp hành chính để xóa bỏ là trái quy luật, vi phạm quyền con người và gây phản tác dụng (nguyên tắc 1 và 2). Trong thời kỳ quá độ, tôn giáo vẫn là nhu cầu tinh thần chính đáng của một bộ phận nhân dân.</p></div></details>
+      </article>
+    </div>
+  </div>
+</section>
+
+<footer class="footnote" id="sources" hidden>
+  <p><b>Nguồn:</b> File phân nhóm thuyết trình; slide bài giảng Tiết 18, 20, 24 (thư mục Drive của lớp); Bộ GD&amp;ĐT, <i>Giáo trình Chủ nghĩa xã hội khoa học</i> (không chuyên), Nxb Chính trị quốc gia Sự thật, 2021; Hiến pháp 2013; Luật Tín ngưỡng, tôn giáo 2016.</p>
+  <p>Số liệu và số hiệu văn bản cần đối chiếu lại với nguồn gốc trước khi đưa lên slide.</p>
+</footer>
+</main>
+
+<script>
+(function () {
+  var slots = document.querySelectorAll('.timeline .slot');
+  var hint = document.getElementById('slot-hint');
+  var sources = document.getElementById('sources');
+  slots.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var opening = btn.getAttribute('aria-expanded') !== 'true';
+      slots.forEach(function (other) {
+        other.setAttribute('aria-expanded', 'false');
+        other.querySelector('.more').textContent = 'Xem nội dung';
+        document.getElementById(other.getAttribute('aria-controls')).hidden = true;
+      });
+      if (opening) {
+        btn.setAttribute('aria-expanded', 'true');
+        btn.querySelector('.more').textContent = 'Thu gọn';
+        document.getElementById(btn.getAttribute('aria-controls')).hidden = false;
+      }
+      hint.hidden = opening;
+      sources.hidden = !opening;
+    });
+  });
+})();
+
+document.querySelectorAll('.q .copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var card = btn.closest('.q');
+    var text = card.querySelector('.text').innerText.trim();
+    var done = function () {
+      btn.textContent = 'Đã sao chép';
+      setTimeout(function () { btn.textContent = 'Sao chép'; }, 1600);
+    };
+    var fallback = function () {
+      var range = document.createRange();
+      range.selectNodeContents(card.querySelector('.text'));
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      btn.textContent = 'Đã chọn, nhấn Ctrl/⌘+C';
+      setTimeout(function () { btn.textContent = 'Sao chép'; }, 2400);
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } catch (e) { fallback(); }
+  });
+});
+
+</script>
+</body>
+</html>
